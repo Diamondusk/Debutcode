@@ -45,24 +45,15 @@
         }
         .allergy-alert { animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 
-        /* Notification Bell Animation */
-        @keyframes ring {
-            0% { transform: rotate(0); }
-            10% { transform: rotate(15deg); }
-            20% { transform: rotate(-10deg); }
-            30% { transform: rotate(5deg); }
-            40% { transform: rotate(-5deg); }
-            50% { transform: rotate(0); }
-            100% { transform: rotate(0); }
-        }
-        .bell-ring { animation: ring 2s ease-in-out infinite; }
-
-        /* Slide Panel Animation */
-        .slide-in-right { transform: translateX(100%); transition: transform 0.3s ease-out; }
-        .slide-in-right.open { transform: translateX(0); }
-
         /* PDF Page break utility */
         .html2pdf__page-break { page-break-before: always !important; display: block; border: 0; clear: both; }
+
+        /* Alert Animation */
+        @keyframes bounce-alert {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-bounce-alert { animation: bounce-alert 1s infinite; }
     </style>
 </head>
 <body class="text-gray-800 h-[100dvh] flex overflow-hidden bg-temple relative">
@@ -132,40 +123,6 @@
     <!-- Overlay for mobile sidebar -->
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-10 hidden md:hidden"></div>
 
-    <!-- Notification Panel (Slide Over) -->
-    <div id="notif-overlay" onclick="toggleNotifPanel()" class="fixed inset-0 bg-black/30 z-[60] hidden backdrop-blur-sm transition-opacity"></div>
-    <div id="notif-panel" class="fixed inset-y-0 right-0 w-full md:w-96 bg-white shadow-2xl z-[70] slide-in-right flex flex-col border-l border-amber-200">
-        <!-- Header ธีมพระพุทธรูป -->
-        <div class="relative bg-gradient-to-b from-amber-600 to-amber-800 p-6 flex flex-col items-center justify-center text-white overflow-hidden shrink-0">
-            <!-- ลายน้ำออร่าด้านหลัง -->
-            <div class="absolute inset-0 opacity-20 flex justify-center items-center">
-                <svg viewBox="0 0 100 100" class="w-48 h-48 animate-spin-slow" style="animation: spin 20s linear infinite;">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 4"/>
-                    <circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 6"/>
-                </svg>
-            </div>
-            <!-- พระพุทธรูป -->
-            <img src="https://www.svgrepo.com/show/276067/buddha.svg" alt="Buddha" class="w-16 h-16 object-contain z-10 mb-2 drop-shadow-md brightness-0 invert" onerror="this.style.display='none'">
-            <h2 class="text-lg font-bold z-10 drop-shadow-sm"><i class="ph-fill ph-bell-ringing mr-1"></i> แจ้งเตือนการอัปเดต</h2>
-            <p class="text-xs text-amber-100 z-10 mt-1">รีเซ็ตอัตโนมัติในวันถัดไป</p>
-            
-            <button onclick="toggleNotifPanel()" class="absolute top-4 right-4 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 rounded-full p-1.5 transition">
-                <i class="ph ph-x text-lg"></i>
-            </button>
-        </div>
-        
-        <!-- Action bar -->
-        <div class="px-4 py-2 bg-amber-50 border-b border-amber-100 flex justify-between items-center shrink-0">
-            <span class="text-xs font-bold text-amber-800">รายการวันนี้</span>
-            <button onclick="clearNotifs()" class="text-[10px] text-gray-500 hover:text-amber-700 font-bold px-2 py-1 bg-white border border-gray-200 rounded shadow-sm">ล้างทั้งหมด</button>
-        </div>
-
-        <!-- List -->
-        <div id="notif-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
-            <!-- Notifications injected here -->
-        </div>
-    </div>
-
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-[100dvh] overflow-hidden bg-transparent relative z-10">
         <!-- Header -->
@@ -176,16 +133,10 @@
                 </button>
                 <h2 id="page-title" class="text-lg md:text-xl font-bold text-amber-900 truncate">แดชบอร์ด</h2>
             </div>
-            <div class="flex items-center gap-3 md:gap-5">
+            <div class="flex items-center gap-4">
                 <span class="text-xs md:text-sm text-amber-800 font-medium bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 flex items-center shadow-sm">
                     <i class="ph ph-clock mr-1.5 md:mr-2 text-base md:text-lg text-amber-600"></i> <span id="current-date"></span>
                 </span>
-                
-                <!-- Notification Bell Button -->
-                <button onclick="toggleNotifPanel()" class="relative p-2 text-amber-700 hover:bg-amber-100 rounded-full transition focus:outline-none focus:ring-2 focus:ring-amber-500">
-                    <i id="bell-icon" class="ph-fill ph-bell text-2xl drop-shadow-sm"></i>
-                    <span id="notif-badge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm hidden transform scale-100 transition-transform">0</span>
-                </button>
             </div>
         </header>
 
@@ -193,135 +144,40 @@
         <div id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 pb-32 md:pb-24">
             <!-- Content gets injected here -->
         </div>
+
+        <!-- Floating Alert Button -->
+        <button onclick="openNotificationModal()" class="fixed bottom-6 right-6 z-40 bg-amber-600 text-white rounded-full p-3 shadow-xl hover:bg-amber-700 transition transform hover:scale-105 border-2 border-white focus:outline-none">
+            <i class="ph-fill ph-bell-ringing text-2xl"></i>
+            <span id="alert-badge-count" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+        </button>
     </main>
 
-    <script>
-        // --- NOTIFICATION SYSTEM (Local Storage based for daily reset) ---
-        let notifications = [];
-        const NOTIF_KEY = 'smart_pall_notifs';
-        const NOTIF_DATE_KEY = 'smart_pall_notif_date';
-
-        function initNotifications() {
-            const today = new Date().toDateString();
-            const savedDate = localStorage.getItem(NOTIF_DATE_KEY);
+    <!-- Notification / Alert Modal -->
+    <div id="notificationModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-amber-50 rounded-3xl w-full max-w-md p-6 shadow-2xl border-4 border-amber-200 relative overflow-hidden">
+            <!-- Background Mandala/Temple pattern for modal -->
+            <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#d97706 1px, transparent 1px); background-size: 16px 16px;"></div>
             
-            // เช็คว่าขึ้นวันใหม่หรือยัง ถ่ายวันใหม่ล้างแจ้งเตือน
-            if (savedDate !== today) {
-                notifications = [];
-                localStorage.setItem(NOTIF_DATE_KEY, today);
-                localStorage.setItem(NOTIF_KEY, JSON.stringify(notifications));
-            } else {
-                const savedNotifs = localStorage.getItem(NOTIF_KEY);
-                if (savedNotifs) {
-                    notifications = JSON.parse(savedNotifs);
-                }
-            }
-            updateNotifUI();
-        }
-
-        function triggerNotification(type, patientName, detailStr) {
-            const timeStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-            let icon = type === 'rx' ? '<i class="ph-fill ph-pill text-purple-500 text-2xl"></i>' : '<i class="ph-fill ph-heartbeat text-rose-500 text-2xl"></i>';
-            let title = type === 'rx' ? 'มีการปรับเปลี่ยนยา/สั่งยา' : 'บันทึกอาการรายวัน (ใหม่)';
-            let bgColor = type === 'rx' ? 'bg-purple-50 border-purple-200' : 'bg-rose-50 border-rose-200';
+            <button onclick="closeNotificationModal()" class="absolute top-4 right-4 text-amber-700 hover:text-red-600 bg-white rounded-full p-1 shadow z-10"><i class="ph ph-x text-xl"></i></button>
             
-            const newNotif = {
-                id: Date.now(),
-                type: type,
-                title: title,
-                patientName: patientName,
-                detail: detailStr,
-                time: timeStr,
-                read: false,
-                icon: icon,
-                bgColor: bgColor
-            };
-
-            notifications.unshift(newNotif); // Add to top
-            localStorage.setItem(NOTIF_KEY, JSON.stringify(notifications));
-            
-            updateNotifUI();
-
-            // Auto-open panel on new notification
-            const panel = document.getElementById('notif-panel');
-            if(!panel.classList.contains('open')){
-                toggleNotifPanel();
-            }
-            
-            // Animation for bell
-            const bell = document.getElementById('bell-icon');
-            bell.classList.add('bell-ring');
-            setTimeout(() => bell.classList.remove('bell-ring'), 2000);
-        }
-
-        function updateNotifUI() {
-            const unreadCount = notifications.filter(n => !n.read).length;
-            const badge = document.getElementById('notif-badge');
-            
-            if (unreadCount > 0) {
-                badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
-                badge.classList.remove('hidden');
-                // Pop animation
-                badge.classList.add('scale-125');
-                setTimeout(() => badge.classList.remove('scale-125'), 200);
-            } else {
-                badge.classList.add('hidden');
-            }
-
-            const listContainer = document.getElementById('notif-list');
-            if (notifications.length === 0) {
-                listContainer.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-full opacity-50 pt-10">
-                        <i class="ph ph-bell-slash text-4xl text-gray-400 mb-2"></i>
-                        <p class="text-sm font-medium text-gray-500">ไม่มีการแจ้งเตือนในวันนี้</p>
-                    </div>`;
-                return;
-            }
-
-            listContainer.innerHTML = notifications.map(n => `
-                <div class="p-3 md:p-4 rounded-xl border shadow-sm relative transition ${n.bgColor} ${!n.read ? 'border-l-4' : 'opacity-75'}">
-                    ${!n.read ? `<span class="absolute top-2 right-2 flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span></span>` : ''}
-                    <div class="flex gap-3 items-start">
-                        <div class="bg-white p-2 rounded-full shadow-sm shrink-0 border border-white">${n.icon}</div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-xs md:text-sm font-bold text-gray-800">${n.title}</h4>
-                            <p class="text-xs text-amber-800 font-semibold mt-0.5 truncate">ผู้ป่วย: ${n.patientName}</p>
-                            <p class="text-[10px] md:text-xs text-gray-600 mt-1 line-clamp-2">${n.detail}</p>
-                            <span class="text-[9px] text-gray-400 flex items-center mt-2"><i class="ph ph-clock mr-1"></i> ${n.time}</span>
-                        </div>
-                    </div>
+            <div class="text-center relative z-10">
+                <!-- Buddha Image -->
+                <div class="w-24 h-24 mx-auto bg-amber-100 rounded-full border-4 border-amber-300 flex items-center justify-center mb-4 shadow-inner overflow-hidden">
+                    <img src="https://www.svgrepo.com/show/276067/buddha.svg" alt="Buddha" class="w-16 h-16 object-contain opacity-80 animate-bounce-alert">
                 </div>
-            `).join('');
-        }
-
-        function toggleNotifPanel() {
-            const panel = document.getElementById('notif-panel');
-            const overlay = document.getElementById('notif-overlay');
-            
-            if (panel.classList.contains('open')) {
-                // Closing
-                panel.classList.remove('open');
-                overlay.classList.add('hidden');
+                <h3 class="text-xl font-bold text-amber-900 mb-1">การเปลี่ยนแปลงวันนี้</h3>
+                <p class="text-xs text-amber-700 mb-5">ระบบตรวจสอบการสั่งยาและอาการที่ต้องเฝ้าระวังประจำวัน</p>
                 
-                // Mark all as read when closing
-                notifications.forEach(n => n.read = true);
-                localStorage.setItem(NOTIF_KEY, JSON.stringify(notifications));
-                updateNotifUI();
-            } else {
-                // Opening
-                panel.classList.add('open');
-                overlay.classList.remove('hidden');
-            }
-        }
+                <div id="notification-list" class="space-y-3 max-h-60 overflow-y-auto text-left hide-scrollbar p-1">
+                    <!-- Notifications will be injected here -->
+                </div>
+                
+                <button onclick="closeNotificationModal()" class="mt-6 w-full bg-amber-600 text-white py-2 rounded-xl shadow-md font-bold hover:bg-amber-700 transition">รับทราบ (สาธุ)</button>
+            </div>
+        </div>
+    </div>
 
-        function clearNotifs() {
-            if(confirm('ล้างการแจ้งเตือนของวันนี้ทั้งหมดหรือไม่?')){
-                notifications = [];
-                localStorage.setItem(NOTIF_KEY, JSON.stringify(notifications));
-                updateNotifUI();
-            }
-        }
-
+    <script>
         // --- UI UTILS ---
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -350,9 +206,10 @@
             patients: [],
             dailyRecords: [],
             selectedPatientId: null,
-            detailTab: 'info', 
-            pharmaTab: 'pending_pharmacy',
-            filters: { type: 'all', adl: 'all', search: '' }
+            detailTab: 'info', // info, hospital, medical, acp, pharmacy, records
+            pharmaTab: 'pending_pharmacy', // pending_pharmacy, dispensed, received
+            filters: { type: 'all', adl: 'all', search: '' },
+            todayAlerts: [] // เก็บ Alert รายวัน
         };
 
         window.tempMedications = [];
@@ -380,11 +237,110 @@
                 state.dailyRecords = recordsData || [];
 
                 render();
+                checkAndProcessAlerts(); // ตรวจสอบและแสดงแจ้งเตือนอัตโนมัติ
+
             } catch (error) {
                 console.error('Error fetching data:', error);
                 alert('ไม่สามารถเชื่อมต่อ Supabase ได้ กรุณาตรวจสอบ Internet และ RLS');
             }
         }
+
+        // --- ALERT SYSTEM LOGIC ---
+        function checkAndProcessAlerts() {
+            const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            state.todayAlerts = [];
+
+            // 1. ตรวจสอบการสั่งยาใหม่/เปลี่ยนยาในวันนี้
+            state.patients.forEach(p => {
+                if(p.status === 'Discharged') return;
+                const rxToday = (p.prescriptions || []).filter(rx => rx.date.startsWith(todayStr));
+                if(rxToday.length > 0) {
+                    state.todayAlerts.push({
+                        type: 'medication',
+                        title: `การสั่งยา/ปรับยา (${p.name})`,
+                        desc: `มีการแก้ไขใบสั่งยาหรือสั่งยาใหม่จำนวน ${rxToday.length} รายการในวันนี้`,
+                        icon: 'ph-fill ph-pill',
+                        color: 'text-purple-600 bg-purple-100'
+                    });
+                }
+            });
+
+            // 2. ตรวจสอบบันทึกอาการรายวันที่ค่า Pain หรือ Dyspnea >= 5 ในวันนี้
+            const recordsToday = state.dailyRecords.filter(r => r.date.startsWith(todayStr));
+            recordsToday.forEach(r => {
+                if (r.pain >= 5 || r.dyspnea >= 5) {
+                    const p = state.patients.find(x => x.id === r.patientId);
+                    if(p) {
+                        state.todayAlerts.push({
+                            type: 'symptom',
+                            title: `เฝ้าระวังอาการ (${p.name})`,
+                            desc: `Pain: <b class="text-red-600">${r.pain}</b> | Dyspnea: <b class="text-blue-600">${r.dyspnea}</b>`,
+                            icon: 'ph-fill ph-warning-circle',
+                            color: 'text-red-600 bg-red-100'
+                        });
+                    }
+                }
+            });
+
+            updateAlertUI(todayStr);
+        }
+
+        function updateAlertUI(todayStr) {
+            const badge = document.getElementById('alert-badge-count');
+            if(state.todayAlerts.length > 0) {
+                badge.innerText = state.todayAlerts.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            // ตรวจสอบว่าวันนี้เปิดดูหรือยัง (Auto pop-up)
+            const storageKey = 'smartPalAlertCount_' + todayStr;
+            const lastSeenCount = parseInt(localStorage.getItem(storageKey) || '0');
+
+            // ถ้ามี Alert ใหม่ที่ยังไม่เคยเห็นในวันนี้ ให้เด้งขึ้นมา
+            if(state.todayAlerts.length > lastSeenCount && state.todayAlerts.length > 0) {
+                openNotificationModal();
+                // บันทึกว่าเห็นจำนวนเท่านี้แล้ว จะไม่เด้งซ้ำอีกจนกว่าจะมี Alert เพิ่มในวันเดียวกัน
+                localStorage.setItem(storageKey, state.todayAlerts.length);
+            }
+        }
+
+        window.openNotificationModal = function() {
+            const listContainer = document.getElementById('notification-list');
+            listContainer.innerHTML = '';
+
+            if(state.todayAlerts.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-6 text-amber-700 bg-white rounded-xl border border-amber-100">
+                        <i class="ph-fill ph-check-circle text-3xl text-emerald-500 mb-2"></i>
+                        <p class="font-bold text-sm">ปกติสุข</p>
+                        <p class="text-xs">ไม่มีรายการเปลี่ยนแปลงยาหรืออาการที่น่าเป็นห่วงในวันนี้</p>
+                    </div>`;
+            } else {
+                listContainer.innerHTML = state.todayAlerts.map(a => `
+                    <div class="bg-white p-3 rounded-xl border border-amber-100 shadow-sm flex items-start gap-3">
+                        <div class="mt-1 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${a.color}">
+                            <i class="${a.icon} text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">${a.title}</h4>
+                            <p class="text-xs text-gray-600 mt-0.5">${a.desc}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('notificationModal').classList.remove('hidden');
+            
+            // อัปเดตยอด seen ทันทีเมื่อเปิดดูเอง
+            const todayStr = new Date().toISOString().split('T')[0];
+            localStorage.setItem('smartPalAlertCount_' + todayStr, state.todayAlerts.length);
+        };
+
+        window.closeNotificationModal = function() {
+            document.getElementById('notificationModal').classList.add('hidden');
+        };
 
         // --- UTILITIES ---
         const formatDate = (dateStr) => {
@@ -527,7 +483,7 @@
                             labels: ['Palliative Care', 'Intermediate (IMC)', 'Elderly Care'],
                             datasets: [{
                                 data: [pal, imc, eld],
-                                backgroundColor: ['#d97706', '#0d9488', '#9ca3af']
+                                backgroundColor: ['#d97706', '#0d9488', '#9ca3af'] // Amber, Teal, Gray
                             }]
                         },
                         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
@@ -548,7 +504,7 @@
             }, 100);
         }
 
-        // --- 2. PATIENT LIST ---
+        // --- 2. PATIENT LIST (WITH COMPACT FILTERS) ---
         function renderPatients(container, filterType = 'active') {
             const updateFilter = () => {
                 state.filters.type = document.getElementById('filter_type').value;
@@ -559,6 +515,7 @@
 
             container.innerHTML = `
                 <div class="bg-white rounded-2xl shadow-sm border border-amber-100 flex flex-col h-full relative z-10">
+                    <!-- Filters Area (Compact) -->
                     <div class="p-3 border-b border-amber-100 bg-amber-50/50 grid grid-cols-2 md:flex md:flex-row gap-2 items-center rounded-t-2xl">
                         <div class="relative col-span-2 md:col-span-1 md:w-1/3">
                             <i class="ph ph-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -607,8 +564,10 @@
 
         function renderPatientTable(filterType) {
             const { type, adl, search } = state.filters;
+            
             let list = state.patients.filter(p => filterType === 'discharged' ? p.status === 'Discharged' : p.status !== 'Discharged');
 
+            // Apply Filters
             if (type !== 'all') list = list.filter(p => p.patientType && p.patientType.includes(type));
             if (adl !== 'all') list = list.filter(p => p.adlScore && p.adlScore.includes(adl));
             if (search) {
@@ -662,6 +621,8 @@
 
         function renderPharmacy(container) {
             const activePatients = state.patients.filter(p => p.status !== 'Discharged');
+            
+            // รวบรวมใบสั่งยาทั้งหมด
             let allRx = [];
             activePatients.forEach(p => {
                 if(p.prescriptions) {
@@ -671,6 +632,7 @@
                 }
             });
 
+            // กรองตามแท็บ
             const filteredRx = allRx.filter(item => item.rx.status === state.pharmaTab);
             filteredRx.sort((a,b) => new Date(b.rx.date) - new Date(a.rx.date));
 
@@ -680,6 +642,8 @@
                         <div class="flex items-center gap-2 text-purple-800 font-bold mb-4">
                             <i class="ph-fill ph-pill text-xl md:text-2xl"></i> ศูนย์จ่ายยาและรับยาอัจฉริยะ
                         </div>
+                        
+                        <!-- Tabs -->
                         <div class="flex overflow-x-auto gap-2 md:gap-4 hide-scrollbar">
                             <button onclick="setPharmaTab('pending_pharmacy')" class="pb-2 px-1 text-xs md:text-sm whitespace-nowrap transition-colors ${state.pharmaTab==='pending_pharmacy' ? 'border-b-2 border-amber-500 text-amber-700 font-bold' : 'text-gray-500 hover:text-gray-700'}">แพทย์สั่งจ่ายยาแล้ว 🟡</button>
                             <button onclick="setPharmaTab('dispensed')" class="pb-2 px-1 text-xs md:text-sm whitespace-nowrap transition-colors ${state.pharmaTab==='dispensed' ? 'border-b-2 border-blue-500 text-blue-700 font-bold' : 'text-gray-500 hover:text-gray-700'}">เภสัชกรจ่ายยาแล้ว 🔵</button>
@@ -718,7 +682,7 @@
                                         <div>
                                             <h5 class="text-[10px] md:text-xs font-bold text-amber-800 mb-1">รายการยา (Rx):</h5>
                                             <ul class="text-[10px] md:text-xs space-y-1 mb-2 text-gray-700">
-                                                ${rx.items.map(m => `<li>• <b>${m.medName}</b> - ${m.dose} (${m.freq})</li>`).join('')}
+                                                ${rx.items.map(m => `<li>• <b>${m.medName}</b> - ${m.dose} (${m.freq}) ${m.amount ? `<span class="text-amber-700 font-semibold">[จำนวน: ${m.amount}]</span>` : ''}</li>`).join('')}
                                             </ul>
                                             ${rx.plan ? `<div class="text-[10px] md:text-[11px] bg-amber-50 p-2 rounded text-amber-900 border border-amber-100 mt-2"><b>แผนการรักษา:</b> ${rx.plan}</div>` : ''}
                                             ${rx.appointmentDate ? `<div class="text-[10px] md:text-[11px] bg-teal-50 p-2 rounded text-teal-900 border border-teal-100 mt-2"><i class="ph-fill ph-calendar-plus text-teal-600 mr-1"></i><b>นัดหมายครั้งต่อไป:</b> ${formatDateOnly(rx.appointmentDate)} ${rx.appointmentNote ? `(${rx.appointmentNote})` : ''}</div>` : ''}
@@ -748,7 +712,7 @@
             if(rxIndex === -1) return;
 
             let name = prompt(`กรุณากรอกชื่อ${newStatus === 'dispensed' ? 'ผู้จ่ายยา (เภสัชกร)' : 'เจ้าหน้าที่ผู้รับยา'}:`);
-            if(name === null) return; 
+            if(name === null) return; // cancelled
             if(name.trim() === '') name = 'ไม่ระบุชื่อ';
 
             p.prescriptions[rxIndex].status = newStatus;
@@ -763,7 +727,7 @@
             try {
                 const { error } = await supabaseClient.from('patients').update({ prescriptions: p.prescriptions }).eq('id', patientId);
                 if(error) throw error;
-                fetchInitialData(); 
+                fetchInitialData(); // Auto re-renders
             } catch (e) {
                 alert('อัปเดตสถานะล้มเหลว: ' + e.message);
             }
@@ -784,11 +748,13 @@
                     <form id="patientForm" onsubmit="handleSavePatient(event)" class="space-y-5">
                         <input type="hidden" id="f_id" value="${p.id || ''}">
                         
+                        <!-- แจ้งเตือนแพ้ยา (เน้น) -->
                         <div class="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
                             <label class="block text-xs md:text-sm font-bold text-red-700 mb-1"><i class="ph-fill ph-warning-circle"></i> ประวัติการแพ้ยา (Allergies)</label>
                             <input type="text" id="f_allergies" value="${p.allergies || ''}" class="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-red-800 text-xs md:text-sm font-medium bg-white" placeholder="เช่น Penicillin (ผื่นขึ้น), Sulfa (หายใจไม่ออก) หรือขีด - หากไม่มีประวัติ">
                         </div>
 
+                        <!-- 1. ข้อมูลทั่วไป -->
                         <section class="p-4 border border-amber-100 rounded-xl bg-amber-50/30">
                             <h4 class="font-bold text-amber-800 mb-3 border-b border-amber-200 pb-2 text-sm">1. ข้อมูลทั่วไป</h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
@@ -821,6 +787,7 @@
                             </div>
                         </section>
 
+                        <!-- ญาติ & ประวัติ รพ -->
                         <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="p-4 border border-amber-100 rounded-xl bg-amber-50/30">
                                 <h4 class="font-bold text-amber-800 mb-3 text-xs border-b border-amber-200 pb-1">ข้อมูลญาติ/ผู้ดูแล</h4>
@@ -847,6 +814,7 @@
                             </div>
                         </section>
 
+                        <!-- Medical -->
                         <section class="p-4 border border-amber-100 rounded-xl bg-amber-50/30">
                             <h4 class="font-bold text-amber-800 mb-3 border-b border-amber-200 pb-2 text-sm">2. ข้อมูลการแพทย์</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 text-xs">
@@ -855,6 +823,7 @@
                                 <div class="md:col-span-2"><label class="mb-1 block font-bold text-gray-700">ผลแลปอื่นๆ</label><textarea id="f_otherLabs" class="w-full p-2 border border-amber-200 rounded-lg h-12">${p.otherLabs || ''}</textarea></div>
                             </div>
 
+                            <!-- เลือดประจำปี -->
                             <div class="border border-amber-200 rounded-lg bg-white p-3 shadow-sm">
                                 <h5 class="font-bold text-amber-700 text-[11px] mb-2">เพิ่มผลเลือดประจำปี</h5>
                                 <div class="grid grid-cols-2 md:grid-cols-9 gap-2 items-end">
@@ -908,6 +877,7 @@
             c.innerHTML = window.tempBloodTests.map((b, i) => `<div class="bg-amber-50 border border-amber-100 p-1.5 text-[9px] flex justify-between rounded items-center"><span class="font-bold text-amber-900">ปี ${b.year}</span> <span class="text-gray-600">FBS:${b.fbs||'-'} HbA1C:${b.hba1c||'-'} eGFR:${b.egfr||'-'} Lipids:${b.chol||'-'}/${b.hdl||'-'}/${b.ldl||'-'}/${b.tg||'-'}</span> <button type="button" onclick="window.removeTempBloodTest(${i})" class="text-red-500 font-bold hover:underline">ลบ</button></div>`).join('');
         };
 
+        // ป้องกันการระเบิดของสคีมาแบบ Safe Upsert
         window.handleSavePatient = async function(e) {
             e.preventDefault();
             const idInput = document.getElementById('f_id').value;
@@ -936,15 +906,18 @@
                 acp: document.getElementById('f_acp').value,
                 bloodTestsList: [...window.tempBloodTests],
                 status: oldP.status || 'Active',
-                medicationsList: oldP.medicationsList || [], 
-                prescriptions: oldP.prescriptions || [], 
-                hospitalRecords: oldP.hospitalRecords || [], 
-                acpRecords: oldP.acpRecords || []
+                medicationsList: oldP.medicationsList || [], // Preserve meds
+                prescriptions: oldP.prescriptions || [], // Preserve prescriptions
+                hospitalRecords: oldP.hospitalRecords || [], // Preserve hospital history
+                acpRecords: oldP.acpRecords || [] // Preserve ACP history
             };
 
+            // โครงสร้างป้องกัน Error: ถ้าไม่พบฟิลด์ คัดกรองตัวแปรแบบยืดหยุ่นก่อนอัปโหลด
             try {
                 const { error } = await supabaseClient.from('patients').upsert(newData);
                 if (error) {
+                    // หากยังไม่ได้รันการเพิ่ม Schema บนเว็บบอร์ด Supabase ให้ดึงข้อมูลมาบันทึกแบบจำลองข้อมูลภายใน
+                    console.warn("Supabase schema missing keys. Trying fallback save without optional records...", error);
                     delete newData.hospitalRecords;
                     delete newData.acpRecords;
                     const { error: fallbackError } = await supabaseClient.from('patients').upsert(newData);
@@ -954,7 +927,7 @@
                 await fetchInitialData();
                 navigate('patient-detail', {patientId: newId});
             } catch (error) {
-                alert('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
+                alert('เกิดข้อผิดพลาดในการบันทึก: ' + error.message + '\n\n*แนะนำให้ตรวจสอบคอลัมน์ acpRecords และ hospitalRecords ใน Supabase Table Editor ว่าเลือกเป็น Type: jsonb หรือยังครับ');
             }
         };
 
@@ -964,9 +937,12 @@
             if(!p) { navigate('patients'); return; }
 
             const hasAllergy = p.allergies && p.allergies.trim() !== '' && p.allergies.trim() !== '-';
+            
+            // ดึงตัวแปรยาและใบสั่งยามาไว้ด้านบนสุด เพื่อป้องกันไม่ให้ PDF Template หาตัวแปรไม่เจอ
             const medsList = p.medicationsList || [];
             const rxList = [...(p.prescriptions || [])].sort((a,b) => new Date(b.date) - new Date(a.date));
 
+            // TABS
             const tabs = [
                 { id: 'info', label: 'ข้อมูลทั่วไป' },
                 { id: 'hospital', label: 'ประวัติ รพ.' },
@@ -1125,17 +1101,22 @@
             else if(state.detailTab === 'pharmacy') {
                 tabContent = `
                     <div class="space-y-4 md:space-y-6">
+                        <!-- รายการยาปัจจุบัน -->
                         <div class="bg-white border border-amber-200 rounded-xl shadow-sm overflow-hidden">
                             <div class="bg-amber-100 px-3 md:px-4 py-2.5 md:py-3 flex justify-between items-center border-b border-amber-200">
                                 <h4 class="font-bold text-amber-900 text-sm"><i class="ph-fill ph-pill text-amber-600"></i> รายการยาปัจจุบัน (Current Meds)</h4>
                             </div>
                             <div class="p-3 md:p-4 grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-xs md:text-sm bg-amber-50/30">
                                 ${medsList.length > 0 ? medsList.map(m => `
-                                    <div class="border border-amber-200 rounded p-2 md:p-2.5 flex justify-between bg-white text-gray-800 shadow-sm"><span class="font-bold text-amber-800">${m.name}</span> <span class="text-[10px] md:text-xs text-gray-600">${m.dosage} (${m.frequency})</span></div>
+                                    <div class="border border-amber-200 rounded p-2 md:p-2.5 flex justify-between bg-white text-gray-800 shadow-sm">
+                                        <span class="font-bold text-amber-800">${m.name}</span> 
+                                        <span class="text-[10px] md:text-xs text-gray-600">${m.dosage} (${m.frequency}) ${m.amount ? `| จำนวน: ${m.amount}` : ''}</span>
+                                    </div>
                                 `).join('') : '<p class="text-amber-700/50 text-xs font-medium">ไม่มียาปัจจุบัน</p>'}
                             </div>
                         </div>
 
+                        <!-- สั่งยาและค้นหา -->
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-amber-200 pb-3 gap-3">
                             <div class="flex-1 w-full md:w-auto">
                                 <h4 class="font-bold text-amber-900 text-sm md:text-lg mb-2">ประวัติใบสั่งยา (Prescriptions)</h4>
@@ -1154,6 +1135,7 @@
                             </div>
                         </div>
 
+                        <!-- รายการประวัติสั่งยา -->
                         <div id="rx_history_list" class="space-y-4">
                             ${rxList.length === 0 ? '<p class="text-center text-amber-700/50 py-6 font-medium text-sm">ไม่มีประวัติใบสั่งยา</p>' : rxList.map((rx, idx) => {
                                 let sBadge = '', action = '', statusText = '';
@@ -1193,7 +1175,7 @@
                                     <div class="md:w-3/4 text-xs md:text-sm mt-1 md:mt-0">
                                         <h5 class="font-bold text-amber-900 mb-2 border-b border-amber-100 pb-1">รายการยา</h5>
                                         <ul class="mb-3 space-y-1">
-                                            ${rx.items.map(i => `<li><span class="text-amber-600 mr-1">•</span><span class="font-bold text-gray-800">${i.medName}</span> <span class="text-[10px] md:text-xs text-gray-600 ml-1 bg-gray-50 px-1 rounded">${i.dose} (${i.freq})</span></li>`).join('')}
+                                            ${rx.items.map(i => `<li><span class="text-amber-600 mr-1">•</span><span class="font-bold text-gray-800">${i.medName}</span> <span class="text-[10px] md:text-xs text-gray-600 ml-1 bg-gray-50 px-1 rounded">${i.dose} (${i.freq})</span> ${i.amount ? `<span class="text-[10px] md:text-xs text-amber-700 font-semibold ml-1">[จำนวน: ${i.amount}]</span>` : ''}</li>`).join('')}
                                         </ul>
                                         ${rx.plan ? `<div class="bg-amber-50 border border-amber-100 p-2 text-[10px] md:text-xs rounded-lg text-amber-900 leading-relaxed mt-2"><b>แผนการรักษา:</b><br>${rx.plan}</div>` : ''}
                                         ${rx.appointmentDate ? `<div class="bg-teal-50 border border-teal-100 p-2 text-[10px] md:text-xs rounded-lg text-teal-900 leading-relaxed mt-2"><i class="ph-fill ph-calendar-plus text-teal-600 mr-1"></i><b>นัดหมายครั้งต่อไป:</b> ${formatDateOnly(rx.appointmentDate)} ${rx.appointmentNote ? `(${rx.appointmentNote})` : ''}</div>` : ''}
@@ -1271,6 +1253,8 @@
                     <div class="min-h-[300px] mt-4">${tabContent}</div>
                 </div>
 
+                <!-- ALL MODALS INJECTED HERE FOR PATIENT DETAIL -->
+                
                 <!-- Rx Modal -->
                 <div id="rxModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div class="bg-white rounded-3xl w-full max-w-lg p-5 md:p-7 max-h-[90vh] overflow-y-auto shadow-2xl">
@@ -1285,8 +1269,9 @@
                                 <div class="flex flex-col gap-2 mb-3 bg-white p-2 md:p-3 rounded-xl border border-amber-100 shadow-sm">
                                     <input type="text" id="rx_medName" placeholder="ชื่อยา" class="w-full border border-gray-200 p-1.5 md:p-2 rounded-lg text-xs md:text-sm focus:ring-1 focus:ring-amber-500">
                                     <div class="flex gap-2">
-                                        <input type="text" id="rx_dose" placeholder="ขนาด (Dose)" class="w-1/2 border border-gray-200 p-1.5 md:p-2 rounded-lg text-xs md:text-sm focus:ring-1 focus:ring-amber-500">
-                                        <input type="text" id="rx_freq" placeholder="วิธีใช้ (Freq)" class="w-1/2 border border-gray-200 p-1.5 md:p-2 rounded-lg text-xs md:text-sm focus:ring-1 focus:ring-amber-500">
+                                        <input type="text" id="rx_dose" placeholder="ขนาด (Dose)" class="w-1/3 border border-gray-200 p-1.5 md:p-2 rounded-lg text-xs md:text-sm focus:ring-1 focus:ring-amber-500">
+                                        <input type="text" id="rx_freq" placeholder="วิธีใช้ (Freq)" class="w-1/3 border border-gray-200 p-1.5 md:p-2 rounded-lg text-xs md:text-sm focus:ring-1 focus:ring-amber-500">
+                                        <input type="text" id="rx_amount" placeholder="จำนวน" class="w-1/3 border border-gray-200 p-1.5 md:p-2 rounded-lg text-xs md:text-sm focus:ring-1 focus:ring-amber-500">
                                     </div>
                                     <button type="button" onclick="addRxItem()" class="w-full bg-amber-100 text-amber-800 py-1.5 md:py-2 rounded-lg text-xs font-bold hover:bg-amber-200 mt-1 transition">เพิ่มลงในใบสั่ง</button>
                                 </div>
@@ -1361,225 +1346,6 @@
                     </div>
                 </div>
 
-                <!-- Hospital & ACP & Discharge & PDF Modals ... (คงเดิมตามฉบับเก่าเพื่อความกระชับ) -->
-                ${getAdditionalModals(p)}
-            `;
-        }
-
-        // --- FILTER PHARMACY RX LIST ---
-        window.filterRxList = function() {
-            const term = document.getElementById('rx_search_input').value.toLowerCase();
-            const cards = document.querySelectorAll('.rx-item-card');
-            cards.forEach(card => {
-                const text = card.getAttribute('data-search').toLowerCase();
-                card.style.display = text.includes(term) ? 'flex' : 'none';
-            });
-        };
-
-        // --- PHARMACY RX ACTIONS ---
-        window.openPrescriptionModal = function(patientId) {
-            window.editingRxPatientId = patientId; window.editingRxIndex = null; window.rxTempList = [];
-            document.getElementById('rx_modal_title').innerHTML = '<i class="ph-fill ph-stethoscope text-amber-600 mr-2"></i> สั่งยา / ปรับยาใหม่ (New Prescription)';
-            document.getElementById('rx_doctor').value = ''; document.getElementById('rx_plan').value = '';
-            document.getElementById('rx_next_appt_date').value = ''; document.getElementById('rx_next_appt_note').value = '';
-            renderRxTempList(); document.getElementById('rxModal').classList.remove('hidden');
-        };
-
-        window.openRemedicationModal = function(patientId) {
-            const p = state.patients.find(x => x.id === patientId); if(!p) return;
-            window.editingRxPatientId = patientId; window.editingRxIndex = null; 
-            window.rxTempList = p.medicationsList ? p.medicationsList.map(m => ({medName: m.name, dose: m.dosage, freq: m.frequency})) : [];
-            document.getElementById('rx_modal_title').innerHTML = '<i class="ph-fill ph-arrows-clockwise text-teal-600 mr-2"></i> Remed (สั่งจ่ายจากยาชุดปัจจุบัน)';
-            document.getElementById('rx_doctor').value = ''; document.getElementById('rx_plan').value = 'Remedication (สั่งจ่ายยาเดิมต่อเนื่อง)';
-            document.getElementById('rx_next_appt_date').value = ''; document.getElementById('rx_next_appt_note').value = '';
-            renderRxTempList(); document.getElementById('rxModal').classList.remove('hidden');
-        };
-
-        window.openRemedicationFromRx = function(patientId, rxId) {
-            const p = state.patients.find(x => x.id === patientId); if(!p || !p.prescriptions) return;
-            const rx = p.prescriptions.find(r => r.id === rxId); if(!rx) return;
-            window.editingRxPatientId = patientId; window.editingRxIndex = null; 
-            window.rxTempList = JSON.parse(JSON.stringify(rx.items));
-            document.getElementById('rx_modal_title').innerHTML = '<i class="ph-fill ph-copy text-teal-600 mr-2"></i> Remedication (อิงจากใบสั่งยาวันที่ ' + formatDateOnly(rx.date) + ')';
-            document.getElementById('rx_doctor').value = ''; document.getElementById('rx_plan').value = 'สั่งยาซ้ำ อิงตามใบสั่งยาเดิมวันที่ ' + formatDateOnly(rx.date);
-            document.getElementById('rx_next_appt_date').value = ''; document.getElementById('rx_next_appt_note').value = '';
-            renderRxTempList(); document.getElementById('rxModal').classList.remove('hidden');
-        };
-
-        window.openEditRxModal = function(patientId, rxId) {
-            const p = state.patients.find(x => x.id === patientId); if(!p || !p.prescriptions) return;
-            const rxIndex = p.prescriptions.findIndex(r => r.id === rxId); if(rxIndex === -1) return;
-            const rx = p.prescriptions[rxIndex];
-            window.editingRxPatientId = patientId; window.editingRxIndex = rxIndex;
-            window.rxTempList = JSON.parse(JSON.stringify(rx.items));
-            document.getElementById('rx_modal_title').innerHTML = '<i class="ph-fill ph-pencil-simple text-amber-600 mr-2"></i> แก้ไขใบสั่งยา';
-            document.getElementById('rx_doctor').value = rx.doctor || ''; document.getElementById('rx_plan').value = rx.plan || '';
-            document.getElementById('rx_next_appt_date').value = rx.appointmentDate ? rx.appointmentDate.split('T')[0] : '';
-            document.getElementById('rx_next_appt_note').value = rx.appointmentNote || '';
-            renderRxTempList(); document.getElementById('rxModal').classList.remove('hidden');
-        };
-
-        window.closePrescriptionModal = function() { document.getElementById('rxModal').classList.add('hidden'); };
-
-        window.renderRxTempList = function() {
-            const container = document.getElementById('rx_temp_list'); if(!container) return;
-            container.innerHTML = window.rxTempList.map((i, idx) => `
-                <li class="p-2 md:p-3 border border-amber-100 rounded-lg flex justify-between items-center hover:bg-amber-100/50 bg-white transition shadow-sm">
-                    <span class="font-bold text-amber-900 text-xs md:text-sm">${i.medName} <span class="text-gray-500 font-medium ml-1 md:ml-2 text-[10px] md:text-xs bg-gray-50 px-1 md:px-2 py-0.5 rounded">${i.dose} (${i.freq})</span></span>
-                    <div class="flex gap-1">
-                        <button type="button" onclick="editRxItem(${idx})" class="text-amber-500 hover:text-amber-700 bg-amber-50 p-1 md:p-1.5 rounded-lg" title="แก้ไข"><i class="ph ph-pencil-simple text-sm md:text-base"></i></button>
-                        <button type="button" onclick="removeRxItem(${idx})" class="text-red-500 hover:text-red-700 bg-red-50 p-1 md:p-1.5 rounded-lg" title="ลบ"><i class="ph ph-trash text-sm md:text-base"></i></button>
-                    </div>
-                </li>
-            `).join('') || '<li class="text-center text-amber-700/50 py-4 bg-amber-50/50 rounded-lg border border-dashed border-amber-200 font-medium text-xs">ยังไม่มีรายการยา</li>';
-        }
-
-        window.addRxItem = function() {
-            const mName = document.getElementById('rx_medName').value.trim();
-            const mDose = document.getElementById('rx_dose').value.trim();
-            const mFreq = document.getElementById('rx_freq').value.trim();
-            if(!mName) return;
-            window.rxTempList.push({ medName: mName, dose: mDose, freq: mFreq });
-            document.getElementById('rx_medName').value=''; document.getElementById('rx_dose').value=''; document.getElementById('rx_freq').value='';
-            renderRxTempList();
-        };
-
-        window.editRxItem = function(idx) {
-            const item = window.rxTempList[idx];
-            document.getElementById('rx_medName').value = item.medName;
-            document.getElementById('rx_dose').value = item.dose;
-            document.getElementById('rx_freq').value = item.freq;
-            window.rxTempList.splice(idx, 1); renderRxTempList();
-        };
-
-        window.removeRxItem = function(idx) { window.rxTempList.splice(idx, 1); renderRxTempList(); }
-
-        window.handleSaveRx = async function(e) {
-            e.preventDefault();
-            if(window.rxTempList.length === 0) { alert('กรุณาเพิ่มยาอย่างน้อย 1 รายการ'); return; }
-            
-            const patientId = window.editingRxPatientId;
-            const docName = document.getElementById('rx_doctor').value;
-            const plan = document.getElementById('rx_plan').value;
-            const nextApptDate = document.getElementById('rx_next_appt_date').value;
-            const nextApptNote = document.getElementById('rx_next_appt_note').value;
-            
-            const p = state.patients.find(x=>x.id===patientId);
-            const rxList = p.prescriptions || [];
-            
-            if (window.editingRxIndex !== null) {
-                rxList[window.editingRxIndex].doctor = docName;
-                rxList[window.editingRxIndex].items = window.rxTempList;
-                rxList[window.editingRxIndex].plan = plan;
-                rxList[window.editingRxIndex].appointmentDate = nextApptDate || null;
-                rxList[window.editingRxIndex].appointmentNote = nextApptNote;
-            } else {
-                const rxId = 'RX' + Date.now();
-                rxList.push({
-                    id: rxId, date: new Date().toISOString(), doctor: docName,
-                    items: window.rxTempList, plan: plan,
-                    appointmentDate: nextApptDate || null, appointmentNote: nextApptNote,
-                    status: 'pending_pharmacy', pharmacist: '', receiver: ''
-                });
-            }
-
-            const newMedsList = window.rxTempList.map(i => ({ name: i.medName, dosage: i.dose, frequency: i.freq }));
-
-            try {
-                const { error } = await supabaseClient.from('patients').update({ prescriptions: rxList, medicationsList: newMedsList }).eq('id', patientId);
-                if(error) throw error;
-                
-                // --- TRIGGER NOTIFICATION ---
-                triggerNotification('rx', p.name, `แพทย์ ${docName} ได้ทำการสั่งยาใหม่ / ปรับเปลี่ยนยา จำนวน ${window.rxTempList.length} รายการ`);
-
-                alert('บันทึกข้อมูลใบสั่งยาเรียบร้อย!');
-                closePrescriptionModal();
-                await fetchInitialData();
-            } catch(err) { alert('Error: ' + err.message); }
-        };
-
-        // --- DAILY RECORD ACTIONS (ADD / EDIT / DELETE) ---
-        window.openDailyRecordFormForAdd = function() {
-            window.editingRecordId = null;
-            document.getElementById('dr_modal_title').innerHTML = "<i class='ph-fill ph-note-pencil text-amber-600 mr-2'></i> เพิ่มบันทึก";
-            const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('dr_date').value = now.toISOString().slice(0,16);
-            document.getElementById('dr_recorder').value = ""; document.getElementById('dr_bp').value = "";
-            document.getElementById('dr_hr').value = ""; document.getElementById('dr_rr').value = ""; document.getElementById('dr_temp').value = ""; document.getElementById('dr_o2').value = "";
-            document.getElementById('dr_pain').value = 0; document.getElementById('dr_dyspnea').value = 0; document.getElementById('dr_dep').value = 0; document.getElementById('dr_cons').value = 0;
-            document.getElementById('dr_note_doctor').value = ""; document.getElementById('dr_note_nurse').value = ""; document.getElementById('dr_note_pt').value = ""; document.getElementById('dr_note_other').value = "";
-            document.getElementById('dailyRecordModal').classList.remove('hidden');
-        };
-
-        window.openDailyRecordFormForEdit = function(recordId) {
-            window.editingRecordId = recordId;
-            const rec = state.dailyRecords.find(x => x.id.toString() === recordId.toString());
-            if(!rec) return;
-            document.getElementById('dr_modal_title').innerHTML = "<i class='ph-fill ph-note-pencil text-amber-600 mr-2'></i> แก้ไขบันทึก";
-            document.getElementById('dr_date').value = rec.date ? rec.date.slice(0,16) : '';
-            document.getElementById('dr_recorder').value = rec.recorderName || '';
-            document.getElementById('dr_bp').value = rec.bp==='-'?'':rec.bp; document.getElementById('dr_hr').value = rec.hr==='-'?'':rec.hr; document.getElementById('dr_rr').value = rec.rr==='-'?'':rec.rr; document.getElementById('dr_temp').value = rec.temp==='-'?'':rec.temp; document.getElementById('dr_o2').value = rec.o2==='-'?'':rec.o2;
-            document.getElementById('dr_pain').value = rec.pain||0; document.getElementById('dr_dyspnea').value = rec.dyspnea||0; document.getElementById('dr_dep').value = rec.depression||0; document.getElementById('dr_cons').value = rec.constipation||0;
-            const mdt = parseCompiledMDTNotes(rec.note);
-            document.getElementById('dr_note_doctor').value = mdt.doctor; document.getElementById('dr_note_nurse').value = mdt.nurse; document.getElementById('dr_note_pt').value = mdt.pt; document.getElementById('dr_note_other').value = mdt.other;
-            document.getElementById('dailyRecordModal').classList.remove('hidden');
-        };
-
-        window.closeDailyRecordForm = function() { document.getElementById('dailyRecordModal').classList.add('hidden'); };
-
-        window.handleSaveDailyRecord = async function(e, patientId) {
-            e.preventDefault();
-            const noteDoc = document.getElementById('dr_note_doctor').value.trim();
-            const noteNurse = document.getElementById('dr_note_nurse').value.trim();
-            const notePt = document.getElementById('dr_note_pt').value.trim();
-            const noteOther = document.getElementById('dr_note_other').value.trim();
-            let compiledNote = '';
-            if (noteDoc) compiledNote += `[แพทย์]: ${noteDoc}\n`;
-            if (noteNurse) compiledNote += `[พยาบาล]: ${noteNurse}\n`;
-            if (notePt) compiledNote += `[นักกายภาพ]: ${notePt}\n`;
-            if (noteOther) compiledNote += `[อื่นๆ]: ${noteOther}\n`;
-            
-            const recordData = {
-                patientId: patientId, date: document.getElementById('dr_date').value,
-                bp: document.getElementById('dr_bp').value || '-', hr: document.getElementById('dr_hr').value || '-', rr: document.getElementById('dr_rr').value || '-', temp: document.getElementById('dr_temp').value || '-', o2: document.getElementById('dr_o2').value || '-',
-                pain: parseInt(document.getElementById('dr_pain').value)||0, dyspnea: parseInt(document.getElementById('dr_dyspnea').value)||0, depression: parseInt(document.getElementById('dr_dep').value)||0, constipation: parseInt(document.getElementById('dr_cons').value)||0,
-                note: compiledNote.trim(), recorderName: document.getElementById('dr_recorder').value
-            };
-
-            try {
-                if(window.editingRecordId) await supabaseClient.from('daily_records').update(recordData).eq('id', window.editingRecordId);
-                else await supabaseClient.from('daily_records').insert(recordData);
-                
-                // --- TRIGGER NOTIFICATION ---
-                if (!window.editingRecordId) { // แจ้งเตือนเฉพาะเคสเพิ่มใหม่
-                    const p = state.patients.find(x=>x.id===patientId);
-                    triggerNotification('record', p.name, `มีการอัปเดตบันทึกอาการและ Vitals sign ใหม่เข้าระบบ`);
-                }
-
-                closeDailyRecordForm();
-                await fetchInitialData();
-            } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
-        };
-
-        window.handleDeleteDailyRecord = async function(recordId) {
-            if(!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบบันทึกอาการรายวันนี้?')) return;
-            try {
-                const { error } = await supabaseClient.from('daily_records').delete().eq('id', recordId);
-                if(error) throw error;
-                await fetchInitialData();
-            } catch(e) { alert('ลบข้อมูลไม่สำเร็จ: '+e.message); }
-        };
-
-        // --- Other Action Utils (Hospital, ACP, Discharge, PDF) ---
-        function getAdditionalModals(p) {
-            const rxList = [...(p.prescriptions || [])].sort((a,b) => new Date(b.date) - new Date(a.date));
-            const medsList = p.medicationsList || [];
-            const hospRecords = [...(p.hospitalRecords || [])].sort((a,b) => new Date(b.date) - new Date(a.date));
-            const acpList = [...(p.acpRecords || [])].sort((a,b) => new Date(b.date) - new Date(a.date));
-            const bloodList = [...(p.bloodTestsList || [])].sort((a,b) => b.year - a.year);
-            const records = state.dailyRecords.filter(r => r.patientId === p.id).sort((a,b) => new Date(b.date) - new Date(a.date));
-
-            return `
                 <!-- Hospital History Modal -->
                 <div id="hospitalModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div class="bg-white rounded-3xl w-full max-w-lg p-5 md:p-7 shadow-2xl">
@@ -1667,186 +1433,131 @@
                 </div>
 
                 <!-- PDF Multi-page Template (COMPREHENSIVE FULL EXPORT) -->
-                <div id="pdf-report-template" class="hidden absolute top-0 left-0 z-[-100] bg-gray-200">
-                    <div class="bg-white text-gray-900 leading-tight" style="width: 210mm; font-family: 'Prompt', sans-serif;">
+                <div id="pdf-report-template" class="hidden">
+                    <div class="bg-white text-gray-900 leading-tight text-[11px]" style="width: 210mm; font-family: 'Prompt', sans-serif;">
                         
-                        <!-- ================= PAGE 1 ================= -->
-                        <div style="padding: 12mm 15mm; min-height: 297mm; box-sizing: border-box; background: white;">
-                            <div class="text-center pb-3 border-b-2 border-amber-500 mb-5">
-                                <h1 class="text-lg font-bold text-amber-800">เวชระเบียนผู้ป่วย (Medical Summary)</h1>
-                                <p class="text-[11px] text-gray-500 mt-1">สถานชีวาภิบาลพระภิกษุอาพาธ วัดทับคล้อ (สวนพระโพธิสัตว์) | พิมพ์เมื่อ ${new Date().toLocaleDateString('th-TH')}</p>
+                        <!-- ================= PAGE 1 : ข้อมูลทั่วไป & รพ ================= -->
+                        <div style="padding: 12mm 15mm; box-sizing: border-box;">
+                            <div class="text-center pb-2 border-b-2 border-amber-500 mb-4">
+                                <h1 class="text-base font-bold text-amber-800">เวชระเบียนผู้ป่วย (Medical Summary) - สถานชีวาภิบาล วัดทับคล้อ</h1>
+                                <p class="text-[9px] text-gray-500">พิมพ์เมื่อ ${new Date().toLocaleDateString('th-TH')} เวลา ${new Date().toLocaleTimeString('th-TH')}</p>
                             </div>
-                            ${p.allergies && p.allergies !== '-' ? `<div class="bg-red-100 text-red-800 p-2.5 text-center text-sm font-bold mb-5 border border-red-300 rounded">⚠️ ประวัติแพ้ยา: ${p.allergies}</div>` : ''}
+                            ${hasAllergy ? `<div class="bg-red-100 text-red-800 p-2 text-center font-bold mb-4 border border-red-300">⚠️ ประวัติแพ้ยา: ${p.allergies}</div>` : ''}
                             
-                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">1. ข้อมูลทั่วไป</h3>
-                            <div class="grid grid-cols-2 gap-4 mb-5 text-xs">
-                                <div class="space-y-1">
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 rounded">1. ข้อมูลทั่วไป (General Information)</h3>
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
                                     <p><b>ชื่อ-สกุล:</b> ${p.name||'-'}</p>
                                     <p><b>HN:</b> ${p.hn||'-'}</p>
-                                    <p><b>อายุ:</b> ${p.age||'-'} ปี &nbsp;&nbsp;<b>เพศ:</b> ${p.gender||'-'}</p>
+                                    <p><b>อายุ:</b> ${p.age||'-'} ปี <b>เพศ:</b> ${p.gender||'-'}</p>
                                 </div>
-                                <div class="space-y-1">
+                                <div>
                                     <p><b>ประเภทผู้ป่วย:</b> ${p.patientType||'-'}</p>
                                     <p><b>ระดับ ADL:</b> ${p.adlScore||'-'}</p>
                                     <p><b>สิทธิ์รักษา:</b> ${p.insurance||'-'}</p>
                                     <p><b>วันที่รับดูแล:</b> ${formatDateOnly(p.admissionDate)}</p>
                                 </div>
                             </div>
-
-                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">2. ข้อมูลญาติผู้ติดต่อ</h3>
-                            <p class="text-xs mb-5"><b>ญาติผู้ดูแลหลัก:</b> ${p.relativeName||'-'} &nbsp;&nbsp;<b>ความสัมพันธ์:</b> ${p.relativeRelation||'-'} &nbsp;&nbsp;<b>เบอร์โทรศัพท์:</b> ${p.relativePhone||'-'}</p>
-
-                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 mt-5 rounded text-sm">3. ประวัติการรักษาในโรงพยาบาล</h3>
-                            <p class="whitespace-pre-wrap text-xs mb-3 text-gray-700"><b>ประวัติ รพ. พื้นฐาน:</b> ${p.hospitalHistory||'ไม่มีข้อมูล'}</p>
-                            <div class="space-y-2">
-                                ${hospRecords.map(hr => `
-                                    <div class="border border-gray-200 p-2.5 rounded text-[11px] bg-gray-50">
-                                        <p class="mb-1 text-amber-900"><b>วันที่:</b> ${formatDateOnly(hr.date)} | <b>สถานะ:</b> <span class="bg-amber-100 px-1 rounded">${hr.dischargeStatus||'-'}</span></p>
-                                        <p class="mb-0.5"><b>อาการ/Diagnosis:</b> ${hr.diagnosis||'-'}</p>
-                                        <p class="mb-0.5"><b>การรักษา:</b> ${hr.treatment||'-'}</p>
-                                    </div>
-                                `).join('') || '<p class="text-xs text-gray-500">- ไม่มีประวัติบันทึกการรักษาในระบบ -</p>'}
-                            </div>
-
-                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 mt-5 rounded text-sm">4. Advance Care Plan (ACP) & POLST</h3>
-                            <p class="text-red-600 mb-2 text-xs font-bold">POLST ปัจจุบัน: <span class="bg-red-50 border border-red-200 px-2 py-0.5 rounded text-red-700">${p.polst||'-'}</span></p>
-                            <p class="whitespace-pre-wrap text-xs mb-3 text-gray-700"><b>แผนเบื้องต้น:</b> ${p.acp||'-'}</p>
                             
-                            <div class="space-y-2">
-                                ${acpList.slice(0, 3).map((a, i) => {
-                                    let rejects = [];
-                                    acpGoals.forEach((id, idx) => { if(a['no'+id]) rejects.push(acpLabels[idx]); });
-                                    return `
-                                    <div class="border border-gray-200 p-2.5 rounded text-[11px] bg-gray-50">
-                                        <p class="mb-1 text-amber-900"><b>อัปเดตเมื่อ:</b> ${formatDateOnly(a.date)} โดย ${a.recordedBy||'-'} ${i===0?'(ล่าสุด)':''}</p>
-                                        <p class="text-red-600 font-bold mb-1"><b>เป้าหมายที่ปฏิเสธ:</b> ${rejects.length>0 ? rejects.join(', ') : 'ไม่มีการปฏิเสธการรักษา'}</p>
-                                        <p class="text-gray-700"><b>บริบทเพิ่มเติม:</b> ${a.note||'-'}</p>
-                                    </div>`;
-                                }).join('') || '<p class="text-xs text-gray-500">- ไม่มีประวัติบันทึก ACP แบบฟอร์มเต็ม -</p>'}
-                            </div>
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 rounded">2. ข้อมูลญาติผู้ติดต่อ (Relative Contact)</h3>
+                            <p><b>ญาติผู้ดูแลหลัก:</b> ${p.relativeName||'-'} <b>ความสัมพันธ์:</b> ${p.relativeRelation||'-'} <b>เบอร์โทรศัพท์:</b> ${p.relativePhone||'-'}</p>
+                            
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 mt-4 rounded">3. ประวัติการรักษาในโรงพยาบาล (Hospital History)</h3>
+                            <p class="whitespace-pre-wrap">${p.hospitalHistory||'ไม่มีประวัติพื้นฐาน'}</p>
+                            ${(p.hospitalRecords || []).map(hr => `
+                                <div class="mt-2 border border-gray-200 p-2 rounded">
+                                    <p class="text-[9px]"><b>วันที่:</b> ${formatDate(hr.date).split(' ')[0]} | <b>สถานะ:</b> ${hr.dischargeStatus||'-'}</p>
+                                    <p class="text-[9px]"><b>Dx/อาการ:</b> ${hr.diagnosis||'-'}</p>
+                                    <p class="text-[9px]"><b>Treatment:</b> ${hr.treatment||'-'}</p>
+                                </div>
+                            `).join('')}
+
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 mt-4 rounded">4. Advance Care Plan (ACP) & POLST</h3>
+                            <p class="text-red-600 mb-1"><b>POLST:</b> ${p.polst||'-'}</p>
+                            <p class="whitespace-pre-wrap"><b>แผนเบื้องต้น:</b> ${p.acp||'-'}</p>
+                            ${(p.acpRecords || []).slice(0,3).map((a,i) => {
+                                let rejects = [];
+                                acpGoals.forEach((id, idx) => { if(a['no'+id]) rejects.push(acpLabels[idx]); });
+                                return `<div class="mt-2 border border-gray-200 p-2 rounded text-[9px]">
+                                    <p><b>อัปเดต:</b> ${formatDate(a.date).split(' ')[0]} โดย ${a.recordedBy||'-'} ${i===0?'(ล่าสุด)':''}</p>
+                                    <p class="text-red-600"><b>ปฏิเสธ:</b> ${rejects.length>0 ? rejects.join(', ') : 'ไม่มี'}</p>
+                                    <p><b>บริบท:</b> ${a.note||'-'}</p>
+                                </div>`;
+                            }).join('')}
                         </div>
 
-                        <!-- ================= PAGE 2 ================= -->
+                        <!-- ================= PAGE 2 : ข้อมูลแพทย์ & ผลแลป ================= -->
                         <div class="html2pdf__page-break"></div>
-                        <div style="padding: 12mm 15mm; min-height: 297mm; box-sizing: border-box; background: white;">
-                            <div class="text-center pb-3 border-b-2 border-amber-500 mb-5">
-                                <h2 class="text-base font-bold text-amber-800">เวชระเบียนผู้ป่วย - ข้อมูลการแพทย์</h2>
-                                <p class="text-[11px] text-gray-500 mt-1">ชื่อ: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
+                        <div style="padding: 12mm 15mm; box-sizing: border-box;">
+                            <div class="text-center pb-2 border-b-2 border-amber-500 mb-4">
+                                <h2 class="font-bold text-amber-800">ข้อมูลการแพทย์และผลตรวจทางห้องปฏิบัติการ (Medical & Labs)</h2>
+                                <p class="text-[9px] text-gray-500">ชื่อ: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
                             </div>
 
-                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">5. การวินิจฉัยและโรคประจำตัว</h3>
-                            <div class="bg-gray-50 border border-gray-200 p-3 rounded mb-5">
-                                <p class="mb-3 text-xs leading-relaxed text-gray-800"><b>Diagnosis (การวินิจฉัยหลัก):</b><br>${p.diagnosis||'-'}</p>
-                                <p class="text-xs leading-relaxed text-gray-800 border-t border-gray-200 pt-3"><b>Underlying Diseases (โรคประจำตัว):</b><br>${p.underlyingDiseases||'-'}</p>
-                            </div>
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 rounded">5. การวินิจฉัยและโรคประจำตัว (Diagnosis & Underlying)</h3>
+                            <p class="mb-2 whitespace-pre-wrap"><b>Diagnosis:</b><br>${p.diagnosis||'-'}</p>
+                            <p class="whitespace-pre-wrap"><b>Underlying Diseases:</b><br>${p.underlyingDiseases||'-'}</p>
 
-                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 mt-5 rounded text-sm">6. ผลแลปและผลการตรวจพิเศษอื่นๆ</h3>
-                            <div class="bg-gray-50 border border-gray-200 p-3 rounded mb-5 min-h-[60px]">
-                                <p class="whitespace-pre-wrap text-xs leading-relaxed text-gray-800">${p.otherLabs||'- ไม่มีข้อมูล -'}</p>
-                            </div>
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 mt-4 rounded">6. ผลแลปและผลการตรวจพิเศษอื่นๆ (Other Lab Results)</h3>
+                            <p class="whitespace-pre-wrap">${p.otherLabs||'-'}</p>
 
-                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 mt-5 rounded text-sm">7. ผลเลือดประจำปี</h3>
-                            <table class="w-full text-xs text-left border border-gray-300">
-                                <thead>
-                                    <tr class="bg-gray-100 border-b border-gray-300">
-                                        <th class="border-r border-gray-300 p-2">ปี พ.ศ.</th>
-                                        <th class="border-r border-gray-300 p-2">FBS</th>
-                                        <th class="border-r border-gray-300 p-2">HbA1C</th>
-                                        <th class="border-r border-gray-300 p-2">eGFR</th>
-                                        <th class="border-r border-gray-300 p-2">Chol</th>
-                                        <th class="border-r border-gray-300 p-2">HDL</th>
-                                        <th class="border-r border-gray-300 p-2 text-red-600">LDL</th>
-                                        <th class="p-2 text-purple-700">TG</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${bloodList.length > 0 ? bloodList.map(b=>`
-                                    <tr class="border-b border-gray-200">
-                                        <td class="border-r border-gray-200 p-2 font-bold">${b.year}</td>
-                                        <td class="border-r border-gray-200 p-2">${b.fbs||'-'}</td>
-                                        <td class="border-r border-gray-200 p-2">${b.hba1c||'-'}</td>
-                                        <td class="border-r border-gray-200 p-2 text-emerald-600">${b.egfr||'-'}</td>
-                                        <td class="border-r border-gray-200 p-2">${b.chol||'-'}</td>
-                                        <td class="border-r border-gray-200 p-2">${b.hdl||'-'}</td>
-                                        <td class="border-r border-gray-200 p-2 text-red-500 font-medium">${b.ldl||'-'}</td>
-                                        <td class="p-2 text-purple-600 font-medium">${b.tg||'-'}</td>
-                                    </tr>`).join('') : '<tr><td colspan="8" class="text-center p-4 text-gray-500">- ไม่มีประวัติผลเลือด -</td></tr>'}
-                                </tbody>
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 mt-4 rounded">7. ผลเลือดประจำปี (Annual Blood Tests)</h3>
+                            <table class="w-full text-[9px] text-left border">
+                                <tr class="bg-gray-100"><th class="border p-1.5">ปี</th><th class="border p-1.5">FBS</th><th class="border p-1.5">HbA1C</th><th class="border p-1.5">eGFR</th><th class="border p-1.5">Chol</th><th class="border p-1.5">HDL</th><th class="border p-1.5">LDL</th><th class="border p-1.5">TG</th></tr>
+                                ${p.bloodTestsList && p.bloodTestsList.length>0 ? p.bloodTestsList.map(b=>`<tr><td class="border p-1.5">${b.year}</td><td class="border p-1.5">${b.fbs||'-'}</td><td class="border p-1.5">${b.hba1c||'-'}</td><td class="border p-1.5">${b.egfr||'-'}</td><td class="border p-1.5">${b.chol||'-'}</td><td class="border p-1.5">${b.hdl||'-'}</td><td class="border p-1.5">${b.ldl||'-'}</td><td class="border p-1.5">${b.tg||'-'}</td></tr>`).join('') : '<tr><td colspan="8" class="text-center border p-2">- ไม่มีข้อมูล -</td></tr>'}
                             </table>
                         </div>
 
-                        <!-- ================= PAGE 3 ================= -->
+                        <!-- ================= PAGE 3 : ประวัติการใช้ยา ================= -->
                         <div class="html2pdf__page-break"></div>
-                        <div style="padding: 12mm 15mm; min-height: 297mm; box-sizing: border-box; background: white;">
-                            <div class="text-center pb-3 border-b-2 border-amber-500 mb-5">
-                                <h2 class="text-base font-bold text-amber-800">เวชระเบียนผู้ป่วย - ประวัติการใช้ยาและนัดหมาย</h2>
-                                <p class="text-[11px] text-gray-500 mt-1">ชื่อ: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
+                        <div style="padding: 12mm 15mm; box-sizing: border-box;">
+                            <div class="text-center pb-2 border-b-2 border-amber-500 mb-4">
+                                <h2 class="font-bold text-amber-800">ประวัติการใช้ยา (Pharmacy & Prescriptions)</h2>
+                                <p class="text-[9px] text-gray-500">ชื่อ: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
                             </div>
 
-                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">8. รายการยาปัจจุบัน (Current Medications)</h3>
-                            <div class="bg-gray-50 border border-gray-200 p-4 rounded mb-6">
-                                <ul class="space-y-2 text-xs">
-                                    ${medsList.length > 0 ? medsList.map(m=>`<li class="border-b border-gray-200 pb-1.5"><span class="text-amber-600 font-bold mr-2">•</span><b class="text-gray-900">${m.name}</b> <span class="ml-2 text-gray-600">${m.dosage} (${m.frequency})</span></li>`).join('') : '<li class="text-gray-500">- ไม่มียาปัจจุบัน -</li>'}
-                                </ul>
-                            </div>
-
-                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 mt-5 rounded text-sm">9. ประวัติใบสั่งยา (Prescriptions) ย้อนหลัง</h3>
-                            <div class="space-y-3">
-                                ${rxList.length > 0 ? rxList.map((rx, idx) => `
-                                    <div class="border border-gray-300 p-3 rounded bg-white">
-                                        <div class="mb-2 text-[11px] bg-gray-100 p-1.5 flex justify-between border-b border-gray-200">
-                                            <span><b>วันที่:</b> ${formatDate(rx.date)} | <b>แพทย์:</b> ${rx.doctor||'-'}</span>
-                                            <span><b>สถานะ:</b> ${rx.status === 'received' ? 'รับยาแล้ว' : (rx.status === 'dispensed' ? 'จ่ายยาแล้ว' : 'รอจ่าย')}</span>
-                                        </div>
-                                        <ul class="ml-4 list-disc text-xs text-gray-800 space-y-1">
-                                            ${rx.items.map(i => `<li><b>${i.medName}</b> - <span class="text-gray-600">${i.dose} (${i.freq})</span></li>`).join('')}
-                                        </ul>
-                                        ${rx.plan ? `<p class="mt-2 pt-1 border-t border-dashed border-gray-200 text-[11px] text-gray-700"><b>แผน/เหตุผล:</b> ${rx.plan}</p>` : ''}
-                                        ${rx.appointmentDate ? `<p class="mt-1 pt-1 text-[11px] text-teal-700 font-bold">นัดหมาย: ${formatDateOnly(rx.appointmentDate)} ${rx.appointmentNote ? `(${rx.appointmentNote})`:''}</p>` : ''}
-                                    </div>
-                                `).join('') : '<p class="text-xs text-gray-500">- ไม่มีบันทึกใบสั่งยา -</p>'}
-                            </div>
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 rounded">8. รายการยาปัจจุบัน (Current Medications)</h3>
+                            <ul class="mb-4 space-y-1">
+                                ${p.medicationsList && p.medicationsList.length>0 ? p.medicationsList.map(m=>`<li class="border-b border-gray-100 pb-1">• <b>${m.name}</b> : ${m.dosage} (${m.frequency}) ${m.amount ? `[จำนวน: ${m.amount}]` : ''}</li>`).join('') : '<li>- ไม่มีบันทึกยาปัจจุบัน -</li>'}
+                            </ul>
+                            
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 mt-4 rounded">9. ประวัติใบสั่งยา (Prescription History) ย้อนหลัง</h3>
+                            ${rxList.length > 0 ? rxList.map(rx => `
+                                <div class="border border-gray-300 p-2 mb-2 rounded">
+                                    <p class="mb-1 text-[9px] bg-gray-100 p-1"><b>วันที่:</b> ${formatDate(rx.date)} | <b>แพทย์:</b> ${rx.doctor||'-'} | <b>สถานะ:</b> ${rx.status === 'received' ? 'รับยาแล้ว' : (rx.status === 'dispensed' ? 'จ่ายยาแล้ว' : 'รอจ่าย')} | <b>ผู้จ่าย:</b> ${rx.pharmacist||'-'}</p>
+                                    <ul class="mt-1 ml-4 list-disc text-[9px]">
+                                        ${rx.items.map(i => `<li><b>${i.medName}</b> - ${i.dose} (${i.freq}) ${i.amount ? `[จำนวน: ${i.amount}]` : ''}</li>`).join('')}
+                                    </ul>
+                                    ${rx.plan ? `<p class="mt-1 pt-1 text-[9px]"><b>แผน/หมายเหตุ:</b> ${rx.plan}</p>` : ''}
+                                    ${rx.appointmentDate ? `<p class="mt-1 pt-1 border-t border-dashed text-[9px] text-teal-700"><b>นัดหมายครั้งต่อไป:</b> ${formatDateOnly(rx.appointmentDate)} ${rx.appointmentNote||''}</p>` : ''}
+                                </div>
+                            `).join('') : '<p>- ไม่มีบันทึกใบสั่งยา -</p>'}
                         </div>
 
-                        <!-- ================= PAGE 4 ================= -->
+                        <!-- ================= PAGE 4 : บันทึกอาการรายวัน ================= -->
                         <div class="html2pdf__page-break"></div>
-                        <div style="padding: 12mm 15mm; min-height: 297mm; box-sizing: border-box; background: white;">
-                            <div class="text-center pb-3 border-b-2 border-amber-500 mb-5">
-                                <h2 class="text-base font-bold text-amber-800">เวชระเบียนผู้ป่วย - บันทึกอาการรายวัน</h2>
-                                <p class="text-[11px] text-gray-500 mt-1">ชื่อ: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
+                        <div style="padding: 12mm 15mm; box-sizing: border-box;">
+                            <div class="text-center pb-2 border-b-2 border-amber-500 mb-4">
+                                <h2 class="font-bold text-amber-800">บันทึกอาการรายวัน (Daily Records)</h2>
+                                <p class="text-[9px] text-gray-500">ชื่อ: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
                             </div>
 
-                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">10. บันทึกสัญญาณชีพและอาการรายวัน</h3>
-                            <table class="w-full text-[10px] text-left border border-gray-300">
-                                <thead>
-                                    <tr class="bg-gray-100 border-b border-gray-300">
-                                        <th class="border-r border-gray-300 p-1.5 w-16">วันที่</th>
-                                        <th class="border-r border-gray-300 p-1.5 w-20">Vitals</th>
-                                        <th class="border-r border-gray-300 p-1 w-6 text-center text-red-600" title="Pain">P</th>
-                                        <th class="border-r border-gray-300 p-1 w-6 text-center text-blue-600" title="Dyspnea">D</th>
-                                        <th class="border-r border-gray-300 p-1 w-6 text-center" title="Depression">D</th>
-                                        <th class="border-r border-gray-300 p-1 w-6 text-center text-amber-700" title="Bowel">B</th>
-                                        <th class="border-r border-gray-300 p-1.5">MDT Note</th>
-                                        <th class="p-1.5 w-14">ผู้บันทึก</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${records.length > 0 ? records.map(r=>`
-                                    <tr class="border-b border-gray-200 align-top">
-                                        <td class="border-r border-gray-200 p-1.5 leading-tight">${formatDate(r.date).replace(' ', '<br>')}</td>
-                                        <td class="border-r border-gray-200 p-1.5 leading-tight text-[9px] text-gray-700">BP: ${r.bp||'-'}<br>HR: ${r.hr||'-'} T: ${r.temp||'-'}<br>O2: ${r.o2||'-'}</td>
-                                        <td class="border-r border-gray-200 p-1.5 text-center font-bold text-red-600">${r.pain}</td>
-                                        <td class="border-r border-gray-200 p-1.5 text-center font-bold text-blue-600">${r.dyspnea}</td>
-                                        <td class="border-r border-gray-200 p-1.5 text-center font-bold">${r.depression}</td>
-                                        <td class="border-r border-gray-200 p-1.5 text-center font-bold text-amber-700">${r.constipation}</td>
-                                        <td class="border-r border-gray-200 p-1.5 leading-relaxed text-[9px] text-gray-800">${r.note ? r.note.replace(/\n/g, '<br>') : '-'}</td>
-                                        <td class="p-1.5 text-[9px] text-gray-600">${r.recorderName||'-'}</td>
-                                    </tr>`).join('') : '<tr><td colspan="8" class="text-center border p-4 text-gray-500">- ไม่มีบันทึกรายวัน -</td></tr>'}
-                                </tbody>
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 rounded">10. บันทึกสัญญาณชีพและอาการ</h3>
+                            <table class="w-full text-[8.5px] text-left border">
+                                <tr class="bg-gray-100"><th class="border p-1 w-16">วันที่</th><th class="border p-1 w-20">Vitals</th><th class="border p-1 w-6 text-center">P</th><th class="border p-1 w-6 text-center">D</th><th class="border p-1 w-6 text-center">D</th><th class="border p-1 w-6 text-center">B</th><th class="border p-1">MDT Note</th><th class="border p-1 w-16">ผู้บันทึก</th></tr>
+                                ${state.dailyRecords.filter(r=>r.patientId===p.id).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(r=>`
+                                <tr>
+                                    <td class="border p-1">${formatDate(r.date).replace(' ', '<br>')}</td>
+                                    <td class="border p-1">BP:${r.bp||'-'}<br>HR:${r.hr||'-'} T:${r.temp||'-'}<br>O2:${r.o2||'-'}</td>
+                                    <td class="border p-1 text-center font-bold text-red-600">${r.pain}</td>
+                                    <td class="border p-1 text-center font-bold text-blue-600">${r.dyspnea}</td>
+                                    <td class="border p-1 text-center font-bold">${r.depression}</td>
+                                    <td class="border p-1 text-center font-bold text-amber-700">${r.constipation}</td>
+                                    <td class="border p-1">${r.note ? r.note.replace(/\n/g, '<br>') : '-'}</td>
+                                    <td class="border p-1">${r.recorderName||'-'}</td>
+                                </tr>`).join('') || '<tr><td colspan="8" class="text-center border p-2">- ไม่มีบันทึก -</td></tr>'}
                             </table>
-                            <div class="mt-3 text-[9px] text-gray-500 bg-gray-50 p-2 rounded border border-gray-200 inline-block">
-                                <b>หมายเหตุ (Symptom Scores):</b> <span class="text-red-600">P = ปวด (Pain)</span>, <span class="text-blue-600">D = เหนื่อย (Dyspnea)</span>, D = ซึมเศร้า (Depression), <span class="text-amber-700">B = ท้องผูก (Bowel/Constipation)</span>
-                            </div>
+                            <p class="text-[8px] text-gray-500 mt-2">* P=Pain, D=Dyspnea, D=Depression, B=Bowel</p>
                         </div>
 
                     </div>
@@ -1854,18 +1565,216 @@
             `;
         }
 
+        // --- FILTER PHARMACY RX LIST ---
+        window.filterRxList = function() {
+            const term = document.getElementById('rx_search_input').value.toLowerCase();
+            const cards = document.querySelectorAll('.rx-item-card');
+            cards.forEach(card => {
+                const text = card.getAttribute('data-search').toLowerCase();
+                if(text.includes(term)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        };
+
+        // --- PHARMACY RX ACTIONS (ADD/EDIT/REMEDICATION) ---
+        window.openPrescriptionModal = function(patientId) {
+            window.editingRxPatientId = patientId;
+            window.editingRxIndex = null;
+            window.rxTempList = [];
+            
+            document.getElementById('rx_modal_title').innerHTML = '<i class="ph-fill ph-stethoscope text-amber-600 mr-2"></i> สั่งยา / ปรับยาใหม่ (New Prescription)';
+            document.getElementById('rx_doctor').value = '';
+            document.getElementById('rx_plan').value = '';
+            document.getElementById('rx_next_appt_date').value = '';
+            document.getElementById('rx_next_appt_note').value = '';
+            renderRxTempList();
+            document.getElementById('rxModal').classList.remove('hidden');
+        };
+
+        // สั่งยาเดิม จากรายการยาชุดปัจจุบัน
+        window.openRemedicationModal = function(patientId) {
+            const p = state.patients.find(x => x.id === patientId);
+            if(!p) return;
+            
+            window.editingRxPatientId = patientId;
+            window.editingRxIndex = null; // ถือเป็นการสร้างใบสั่งยาใหม่
+            
+            // นำ amount มาด้วยถ้ามีในยาปัจจุบัน
+            window.rxTempList = p.medicationsList ? p.medicationsList.map(m => ({medName: m.name, dose: m.dosage, freq: m.frequency, amount: m.amount || ''})) : [];
+            
+            document.getElementById('rx_modal_title').innerHTML = '<i class="ph-fill ph-arrows-clockwise text-teal-600 mr-2"></i> Remed (สั่งจ่ายจากยาชุดปัจจุบัน)';
+            document.getElementById('rx_doctor').value = '';
+            document.getElementById('rx_plan').value = 'Remedication (สั่งจ่ายยาเดิมต่อเนื่อง)';
+            document.getElementById('rx_next_appt_date').value = '';
+            document.getElementById('rx_next_appt_note').value = '';
+            renderRxTempList();
+            document.getElementById('rxModal').classList.remove('hidden');
+        };
+
+        // สั่งยาเดิม จากใบสั่งยาอดีตใบใดก็ได้
+        window.openRemedicationFromRx = function(patientId, rxId) {
+            const p = state.patients.find(x => x.id === patientId);
+            if(!p || !p.prescriptions) return;
+            const rx = p.prescriptions.find(r => r.id === rxId);
+            if(!rx) return;
+            
+            window.editingRxPatientId = patientId;
+            window.editingRxIndex = null; // ถือเป็นการสร้างใบสั่งยาใหม่ล่าสุด
+            
+            window.rxTempList = JSON.parse(JSON.stringify(rx.items)); // คัดลอกรายการยา
+            
+            document.getElementById('rx_modal_title').innerHTML = '<i class="ph-fill ph-copy text-teal-600 mr-2"></i> Remedication (อิงจากใบสั่งยาวันที่ ' + formatDateOnly(rx.date) + ')';
+            document.getElementById('rx_doctor').value = ''; // ให้หมอใหม่กรอกชื่อตัวเอง
+            document.getElementById('rx_plan').value = 'สั่งยาซ้ำ อิงตามใบสั่งยาเดิมวันที่ ' + formatDateOnly(rx.date);
+            document.getElementById('rx_next_appt_date').value = '';
+            document.getElementById('rx_next_appt_note').value = '';
+            
+            renderRxTempList();
+            document.getElementById('rxModal').classList.remove('hidden');
+        };
+
+        // แก้ไขใบสั่งยาที่เคยสร้างไปแล้ว
+        window.openEditRxModal = function(patientId, rxId) {
+            const p = state.patients.find(x => x.id === patientId);
+            if(!p || !p.prescriptions) return;
+            
+            const rxIndex = p.prescriptions.findIndex(r => r.id === rxId);
+            if(rxIndex === -1) return;
+
+            const rx = p.prescriptions[rxIndex];
+            
+            window.editingRxPatientId = patientId;
+            window.editingRxIndex = rxIndex;
+            
+            window.rxTempList = JSON.parse(JSON.stringify(rx.items));
+            document.getElementById('rx_modal_title').innerHTML = '<i class="ph-fill ph-pencil-simple text-amber-600 mr-2"></i> แก้ไขใบสั่งยา';
+            document.getElementById('rx_doctor').value = rx.doctor || '';
+            document.getElementById('rx_plan').value = rx.plan || '';
+            document.getElementById('rx_next_appt_date').value = rx.appointmentDate ? rx.appointmentDate.split('T')[0] : '';
+            document.getElementById('rx_next_appt_note').value = rx.appointmentNote || '';
+            
+            renderRxTempList();
+            document.getElementById('rxModal').classList.remove('hidden');
+        };
+
+        window.closePrescriptionModal = function() {
+            document.getElementById('rxModal').classList.add('hidden');
+        };
+
+        window.renderRxTempList = function() {
+            const container = document.getElementById('rx_temp_list');
+            if(!container) return;
+            container.innerHTML = window.rxTempList.map((i, idx) => `
+                <li class="p-2 md:p-3 border border-amber-100 rounded-lg flex justify-between items-center hover:bg-amber-100/50 bg-white transition shadow-sm">
+                    <span class="font-bold text-amber-900 text-xs md:text-sm">
+                        ${i.medName} 
+                        <span class="text-gray-500 font-medium ml-1 md:ml-2 text-[10px] md:text-xs bg-gray-50 px-1 md:px-2 py-0.5 rounded">${i.dose} (${i.freq})</span>
+                        ${i.amount ? `<span class="text-amber-700 font-bold ml-1 text-[10px] md:text-xs">จำนวน: ${i.amount}</span>` : ''}
+                    </span>
+                    <div class="flex gap-1">
+                        <button type="button" onclick="editRxItem(${idx})" class="text-amber-500 hover:text-amber-700 bg-amber-50 p-1 md:p-1.5 rounded-lg" title="แก้ไข"><i class="ph ph-pencil-simple text-sm md:text-base"></i></button>
+                        <button type="button" onclick="removeRxItem(${idx})" class="text-red-500 hover:text-red-700 bg-red-50 p-1 md:p-1.5 rounded-lg" title="ลบ"><i class="ph ph-trash text-sm md:text-base"></i></button>
+                    </div>
+                </li>
+            `).join('') || '<li class="text-center text-amber-700/50 py-4 bg-amber-50/50 rounded-lg border border-dashed border-amber-200 font-medium text-xs">ยังไม่มีรายการยา</li>';
+        }
+
+        window.addRxItem = function() {
+            const mName = document.getElementById('rx_medName').value.trim();
+            const mDose = document.getElementById('rx_dose').value.trim();
+            const mFreq = document.getElementById('rx_freq').value.trim();
+            const mAmount = document.getElementById('rx_amount').value.trim();
+            if(!mName) return;
+            window.rxTempList.push({ medName: mName, dose: mDose, freq: mFreq, amount: mAmount });
+            document.getElementById('rx_medName').value=''; document.getElementById('rx_dose').value=''; document.getElementById('rx_freq').value=''; document.getElementById('rx_amount').value='';
+            renderRxTempList();
+        };
+
+        window.editRxItem = function(idx) {
+            const item = window.rxTempList[idx];
+            document.getElementById('rx_medName').value = item.medName;
+            document.getElementById('rx_dose').value = item.dose;
+            document.getElementById('rx_freq').value = item.freq;
+            document.getElementById('rx_amount').value = item.amount || '';
+            window.rxTempList.splice(idx, 1);
+            renderRxTempList();
+        };
+
+        window.removeRxItem = function(idx) {
+            window.rxTempList.splice(idx, 1);
+            renderRxTempList();
+        }
+
+        window.handleSaveRx = async function(e) {
+            e.preventDefault();
+            if(window.rxTempList.length === 0) { alert('กรุณาเพิ่มยาอย่างน้อย 1 รายการ'); return; }
+            
+            const patientId = window.editingRxPatientId;
+            const docName = document.getElementById('rx_doctor').value;
+            const plan = document.getElementById('rx_plan').value;
+            const nextApptDate = document.getElementById('rx_next_appt_date').value;
+            const nextApptNote = document.getElementById('rx_next_appt_note').value;
+            
+            const p = state.patients.find(x=>x.id===patientId);
+            const rxList = p.prescriptions || [];
+            
+            if (window.editingRxIndex !== null) {
+                rxList[window.editingRxIndex].doctor = docName;
+                rxList[window.editingRxIndex].items = window.rxTempList;
+                rxList[window.editingRxIndex].plan = plan;
+                rxList[window.editingRxIndex].appointmentDate = nextApptDate || null;
+                rxList[window.editingRxIndex].appointmentNote = nextApptNote;
+            } else {
+                const rxId = 'RX' + Date.now();
+                rxList.push({
+                    id: rxId, date: new Date().toISOString(), doctor: docName,
+                    items: window.rxTempList, plan: plan,
+                    appointmentDate: nextApptDate || null,
+                    appointmentNote: nextApptNote,
+                    status: 'pending_pharmacy', pharmacist: '', receiver: ''
+                });
+            }
+
+            // Update Current Medications list including the new 'amount' parameter
+            const newMedsList = window.rxTempList.map(i => ({ name: i.medName, dosage: i.dose, frequency: i.freq, amount: i.amount }));
+
+            try {
+                const { error } = await supabaseClient.from('patients').update({ prescriptions: rxList, medicationsList: newMedsList }).eq('id', patientId);
+                if(error) throw error;
+                alert('บันทึกข้อมูลใบสั่งยาเรียบร้อย!');
+                closePrescriptionModal();
+                await fetchInitialData();
+            } catch(err) { alert('Error: ' + err.message); }
+        };
+
+        // --- HOSPITAL HISTORY ACTIONS ---
         window.openHospitalModal = function() {
             document.getElementById('hosp_date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('hosp_dx').value = ''; document.getElementById('hosp_tx').value = '';
-            document.getElementById('hosp_status').value = ''; document.getElementById('hosp_note').value = '';
+            document.getElementById('hosp_dx').value = '';
+            document.getElementById('hosp_tx').value = '';
+            document.getElementById('hosp_status').value = '';
+            document.getElementById('hosp_note').value = '';
             document.getElementById('hospitalModal').classList.remove('hidden');
         };
 
         window.handleSaveHospital = async function(e) {
             e.preventDefault();
-            const patientId = state.selectedPatientId; const p = state.patients.find(x => x.id === patientId);
+            const patientId = state.selectedPatientId;
+            const p = state.patients.find(x => x.id === patientId);
             let records = p.hospitalRecords || [];
-            records.push({ id: 'HOSP' + Date.now(), date: document.getElementById('hosp_date').value, diagnosis: document.getElementById('hosp_dx').value, treatment: document.getElementById('hosp_tx').value, dischargeStatus: document.getElementById('hosp_status').value, note: document.getElementById('hosp_note').value });
+            
+            records.push({
+                id: 'HOSP' + Date.now(),
+                date: document.getElementById('hosp_date').value,
+                diagnosis: document.getElementById('hosp_dx').value,
+                treatment: document.getElementById('hosp_tx').value,
+                dischargeStatus: document.getElementById('hosp_status').value,
+                note: document.getElementById('hosp_note').value
+            });
+
             try {
                 const { error } = await supabaseClient.from('patients').update({ hospitalRecords: records }).eq('id', patientId);
                 if (error) throw error;
@@ -1876,105 +1785,225 @@
 
         window.deleteHospitalRecord = async function(recordId) {
             if(!confirm('คุณต้องการลบประวัติการรักษานี้ใช่หรือไม่?')) return;
-            const p = state.patients.find(x => x.id === state.selectedPatientId);
+            const patientId = state.selectedPatientId;
+            const p = state.patients.find(x => x.id === patientId);
             let records = p.hospitalRecords.filter(x => x.id !== recordId);
             try {
-                const { error } = await supabaseClient.from('patients').update({ hospitalRecords: records }).eq('id', state.selectedPatientId);
-                if (error) throw error; await fetchInitialData();
+                const { error } = await supabaseClient.from('patients').update({ hospitalRecords: records }).eq('id', patientId);
+                if (error) throw error;
+                await fetchInitialData();
             } catch (err) { alert('Error: ' + err.message); }
         };
 
+        // --- ACP RECORDS ACTIONS ---
         window.openAcpModal = function() {
             document.getElementById('acp_date').value = new Date().toISOString().split('T')[0];
             document.getElementById('acp_recorder').value = '';
-            acpGoals.forEach(id => document.getElementById('acp_No' + id).checked = false );
-            document.getElementById('acp_note').value = ''; document.getElementById('acpModal').classList.remove('hidden');
+            acpGoals.forEach(id => {
+                document.getElementById('acp_No' + id).checked = false;
+            });
+            document.getElementById('acp_note').value = '';
+            document.getElementById('acpModal').classList.remove('hidden');
         };
 
         window.handleSaveAcp = async function(e) {
             e.preventDefault();
-            const patientId = state.selectedPatientId; const p = state.patients.find(x => x.id === patientId);
+            const patientId = state.selectedPatientId;
+            const p = state.patients.find(x => x.id === patientId);
             let records = p.acpRecords || [];
-            const newAcp = { id: 'ACP' + Date.now(), date: document.getElementById('acp_date').value, recordedBy: document.getElementById('acp_recorder').value, note: document.getElementById('acp_note').value };
-            acpGoals.forEach(id => newAcp['no' + id] = document.getElementById('acp_No' + id).checked);
+            
+            const newAcp = {
+                id: 'ACP' + Date.now(),
+                date: document.getElementById('acp_date').value,
+                recordedBy: document.getElementById('acp_recorder').value,
+                note: document.getElementById('acp_note').value
+            };
+            
+            acpGoals.forEach(id => {
+                newAcp['no' + id] = document.getElementById('acp_No' + id).checked;
+            });
+
             records.push(newAcp);
+
             try {
                 const { error } = await supabaseClient.from('patients').update({ acpRecords: records }).eq('id', patientId);
                 if (error) throw error;
-                document.getElementById('acpModal').classList.add('hidden'); await fetchInitialData();
+                document.getElementById('acpModal').classList.add('hidden');
+                await fetchInitialData();
             } catch (err) { alert('ล้มเหลว: ' + err.message); }
         };
 
         window.deleteAcpRecord = async function(recordId) {
-            if(!confirm('ลบแบบบันทึกเป้าหมาย ACP นี้?')) return;
-            const p = state.patients.find(x => x.id === state.selectedPatientId);
+            if(!confirm('คุณต้องการลบแบบบันทึกเป้าหมาย ACP นี้ใช่หรือไม่?')) return;
+            const patientId = state.selectedPatientId;
+            const p = state.patients.find(x => x.id === patientId);
             let records = p.acpRecords.filter(x => x.id !== recordId);
             try {
-                const { error } = await supabaseClient.from('patients').update({ acpRecords: records }).eq('id', state.selectedPatientId);
-                if (error) throw error; await fetchInitialData();
+                const { error } = await supabaseClient.from('patients').update({ acpRecords: records }).eq('id', patientId);
+                if (error) throw error;
+                await fetchInitialData();
             } catch (err) { alert('Error: ' + err.message); }
         };
 
+        // --- DAILY RECORD ACTIONS (ADD / EDIT / DELETE) ---
+        window.openDailyRecordFormForAdd = function() {
+            window.editingRecordId = null;
+            document.getElementById('dr_modal_title').innerHTML = "<i class='ph-fill ph-note-pencil text-amber-600 mr-2'></i> เพิ่มบันทึก";
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('dr_date').value = now.toISOString().slice(0,16);
+            
+            document.getElementById('dr_recorder').value = ""; document.getElementById('dr_bp').value = "";
+            document.getElementById('dr_hr').value = ""; document.getElementById('dr_rr').value = ""; document.getElementById('dr_temp').value = ""; document.getElementById('dr_o2').value = "";
+            document.getElementById('dr_pain').value = 0; document.getElementById('dr_dyspnea').value = 0; document.getElementById('dr_dep').value = 0; document.getElementById('dr_cons').value = 0;
+            document.getElementById('dr_note_doctor').value = ""; document.getElementById('dr_note_nurse').value = ""; document.getElementById('dr_note_pt').value = ""; document.getElementById('dr_note_other').value = "";
+            document.getElementById('dailyRecordModal').classList.remove('hidden');
+        };
+
+        window.openDailyRecordFormForEdit = function(recordId) {
+            window.editingRecordId = recordId;
+            const rec = state.dailyRecords.find(x => x.id.toString() === recordId.toString());
+            if(!rec) return;
+            document.getElementById('dr_modal_title').innerHTML = "<i class='ph-fill ph-note-pencil text-amber-600 mr-2'></i> แก้ไขบันทึก";
+            document.getElementById('dr_date').value = rec.date ? rec.date.slice(0,16) : '';
+            document.getElementById('dr_recorder').value = rec.recorderName || '';
+            document.getElementById('dr_bp').value = rec.bp==='-'?'':rec.bp; document.getElementById('dr_hr').value = rec.hr==='-'?'':rec.hr; document.getElementById('dr_rr').value = rec.rr==='-'?'':rec.rr; document.getElementById('dr_temp').value = rec.temp==='-'?'':rec.temp; document.getElementById('dr_o2').value = rec.o2==='-'?'':rec.o2;
+            document.getElementById('dr_pain').value = rec.pain||0; document.getElementById('dr_dyspnea').value = rec.dyspnea||0; document.getElementById('dr_dep').value = rec.depression||0; document.getElementById('dr_cons').value = rec.constipation||0;
+            
+            const mdt = parseCompiledMDTNotes(rec.note);
+            document.getElementById('dr_note_doctor').value = mdt.doctor; document.getElementById('dr_note_nurse').value = mdt.nurse; document.getElementById('dr_note_pt').value = mdt.pt; document.getElementById('dr_note_other').value = mdt.other;
+            document.getElementById('dailyRecordModal').classList.remove('hidden');
+        };
+
+        window.closeDailyRecordForm = function() { document.getElementById('dailyRecordModal').classList.add('hidden'); };
+
+        window.handleSaveDailyRecord = async function(e, patientId) {
+            e.preventDefault();
+            const noteDoc = document.getElementById('dr_note_doctor').value.trim();
+            const noteNurse = document.getElementById('dr_note_nurse').value.trim();
+            const notePt = document.getElementById('dr_note_pt').value.trim();
+            const noteOther = document.getElementById('dr_note_other').value.trim();
+            let compiledNote = '';
+            if (noteDoc) compiledNote += `[แพทย์]: ${noteDoc}\n`;
+            if (noteNurse) compiledNote += `[พยาบาล]: ${noteNurse}\n`;
+            if (notePt) compiledNote += `[นักกายภาพ]: ${notePt}\n`;
+            if (noteOther) compiledNote += `[อื่นๆ]: ${noteOther}\n`;
+            
+            const recordData = {
+                patientId: patientId, date: document.getElementById('dr_date').value,
+                bp: document.getElementById('dr_bp').value || '-', hr: document.getElementById('dr_hr').value || '-', rr: document.getElementById('dr_rr').value || '-', temp: document.getElementById('dr_temp').value || '-', o2: document.getElementById('dr_o2').value || '-',
+                pain: parseInt(document.getElementById('dr_pain').value)||0, dyspnea: parseInt(document.getElementById('dr_dyspnea').value)||0, depression: parseInt(document.getElementById('dr_dep').value)||0, constipation: parseInt(document.getElementById('dr_cons').value)||0,
+                note: compiledNote.trim(), recorderName: document.getElementById('dr_recorder').value
+            };
+
+            try {
+                if(window.editingRecordId) await supabaseClient.from('daily_records').update(recordData).eq('id', window.editingRecordId);
+                else await supabaseClient.from('daily_records').insert(recordData);
+                closeDailyRecordForm();
+                await fetchInitialData();
+            } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
+        };
+
+        window.handleDeleteDailyRecord = async function(recordId) {
+            if(!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบบันทึกอาการรายวันนี้?')) return;
+            try {
+                const { error } = await supabaseClient.from('daily_records').delete().eq('id', recordId);
+                if(error) throw error;
+                await fetchInitialData();
+            } catch(e) { alert('ลบข้อมูลไม่สำเร็จ: '+e.message); }
+        };
+
+        // --- PDF EXPORT (MULTI-PAGE) ---
         window.exportToPDF = function(patientId) {
-            const element = document.getElementById('pdf-report-template'); 
+            const element = document.getElementById('pdf-report-template');
             element.classList.remove('hidden');
             const p = state.patients.find(x=>x.id===patientId);
-            
-            // ตั้งค่าหน้ากระดาษ A4 แนวตั้ง
-            const opt = { 
-                margin: 0, 
-                filename: `Medical_Summary_${p.hn||p.name}.pdf`, 
-                image: { type: 'jpeg', quality: 0.98 }, 
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true, 
-                    logging: false,
-                    windowWidth: 1024 // บังคับให้เรนเดอร์ในมุมมอง Desktop เพื่อไม่ให้ Layout เพี้ยน
-                }, 
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+            const opt = {
+                margin:       0,
+                filename:     `Summary_Report_${p.hn||p.name}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            
             html2pdf().set(opt).from(element).save().then(() => element.classList.add('hidden'));
         };
 
+        // --- EXPORT TO EXCEL ---
         window.exportAllToExcel = function(filterType) {
             const { type, adl, search } = state.filters;
             let list = state.patients.filter(p => filterType === 'discharged' ? p.status === 'Discharged' : p.status !== 'Discharged');
             if (type !== 'all') list = list.filter(p => p.patientType && p.patientType.includes(type));
             if (adl !== 'all') list = list.filter(p => p.adlScore && p.adlScore.includes(adl));
             if(list.length === 0) { alert('ไม่มีข้อมูล'); return; }
-            const ws = XLSX.utils.json_to_sheet(list.map(p => ({ 'HN': p.hn, 'ชื่อ': p.name, 'อายุ': p.age, 'แพ้ยา': p.allergies, 'ประเภท': p.patientType })));
+            
+            const ws = XLSX.utils.json_to_sheet(list.map(p => ({
+                'HN': p.hn, 'ชื่อ': p.name, 'อายุ': p.age, 'แพ้ยา': p.allergies, 'ประเภท': p.patientType
+            })));
             XLSX.writeFile(XLSX.utils.book_append_sheet(XLSX.utils.book_new(), ws, "Patients"), "Patients.xlsx");
         };
 
-        window.openDischargeModal = function() { document.getElementById('dischargeModal').classList.remove('hidden'); };
-        window.closeDischargeModal = function() { document.getElementById('dischargeModal').classList.add('hidden'); };
+        // --- DISCHARGE MODAL ACTION ---
+        window.openDischargeModal = function() {
+            document.getElementById('dischargeModal').classList.remove('hidden');
+        };
+        window.closeDischargeModal = function() {
+            document.getElementById('dischargeModal').classList.add('hidden');
+        };
         window.handleDischarge = async function(e, patientId) {
             e.preventDefault();
+            const date = document.getElementById('dis_date').value;
+            const reason = document.getElementById('dis_reason').value;
+            const note = document.getElementById('dis_note').value;
+
             try {
-                const { error } = await supabaseClient.from('patients').update({ status: 'Discharged', dischargeDate: document.getElementById('dis_date').value, dischargeReason: document.getElementById('dis_reason').value, dischargeNote: document.getElementById('dis_note').value }).eq('id', patientId);
+                const { error } = await supabaseClient
+                    .from('patients')
+                    .update({
+                        status: 'Discharged',
+                        dischargeDate: date,
+                        dischargeReason: reason,
+                        dischargeNote: note
+                    })
+                    .eq('id', patientId);
+
                 if (error) throw error;
+
                 alert('จำหน่ายผู้ป่วยออกจากสถานชีวาภิบาลเรียบร้อยแล้ว');
-                closeDischargeModal(); await fetchInitialData(); navigate('discharged');
-            } catch (error) { alert('เกิดข้อผิดพลาด: ' + error.message); }
+                closeDischargeModal();
+                await fetchInitialData();
+                navigate('discharged');
+            } catch (error) {
+                console.error('Error discharging:', error);
+                alert('เกิดข้อผิดพลาดในการจำหน่ายผู้ป่วย: ' + error.message);
+            }
         };
 
         window.handleReAdmit = async function(patientId) {
             if(!confirm('คุณต้องการรับผู้ป่วยรายนี้กลับเข้ามาดูแลรักษารอบใหม่ใช่หรือไม่?')) return;
             try {
-                const { error } = await supabaseClient.from('patients').update({ status: 'Active', dischargeDate: null, dischargeReason: null, dischargeNote: null }).eq('id', patientId);
+                const { error } = await supabaseClient
+                    .from('patients')
+                    .update({
+                        status: 'Active',
+                        dischargeDate: null,
+                        dischargeReason: null,
+                        dischargeNote: null
+                    })
+                    .eq('id', patientId);
+
                 if (error) throw error;
+
                 alert('รับผู้ป่วยรายเดิมกลับเข้ามาดูแลอีกครั้งเรียบร้อย');
-                await fetchInitialData(); navigate('patients');
-            } catch (error) { alert('เกิดข้อผิดพลาด: ' + error.message); }
+                await fetchInitialData();
+                navigate('patients');
+            } catch (error) {
+                console.error('Error re-admit:', error);
+                alert('เกิดข้อผิดพลาดในการรับดูแลใหม่: ' + error.message);
+            }
         };
 
         // --- INIT ---
-        window.onload = () => { 
-            initNotifications();
-            navigate('dashboard'); 
-            fetchInitialData(); 
-        };
+        window.onload = () => { navigate('dashboard'); fetchInitialData(); };
     </script>
 </body>
 </html>
