@@ -1453,238 +1453,227 @@
 
                 <!-- PDF Multi-page Template (COMPREHENSIVE FULL 4-PAGE EXPORT - HIGHLY POLISHED) -->
                 <div id="pdf-report-template" class="hidden">
-                    <div class="bg-white text-gray-900 leading-tight text-[11px]" style="width: 210mm; font-family: 'Prompt', sans-serif;">
+                    <div class="bg-white text-gray-900 leading-relaxed text-xs" style="font-family: 'Prompt', sans-serif;">
                         
                         <!-- ================= PAGE 1 ================= -->
-                        <div style="padding: 15mm; min-height: 297mm; box-sizing: border-box; display: flex; flex-col justify-between;">
-                            <div>
-                                <div class="text-center pb-2 border-b-2 border-amber-500 mb-4">
-                                    <h1 class="text-lg font-bold text-amber-800">เวชระเบียนผู้ป่วยและรายงานชีวาภิบาล (Medical Summary)</h1>
-                                    <p class="text-[9px] text-gray-500">สถานชีวาภิบาลพระภิกษุอาพาธ วัดทับคล้อ (สวนพระโพธิสัตว์) | พิมพ์เมื่อ ${new Date().toLocaleDateString('th-TH')}</p>
-                                </div>
-                                ${hasAllergy ? `<div class="bg-red-100 text-red-800 p-2 text-center font-bold mb-4 border border-red-300 rounded">⚠️ ประวัติแพ้ยา: ${p.allergies}</div>` : ''}
-                                
-                                <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 rounded text-xs">1. ข้อมูลทั่วไป (Demographics)</h3>
-                                <table class="w-full mb-4 text-[10px] border-collapse">
-                                    <tr>
-                                        <td class="py-1 w-1/4 font-semibold text-gray-600">ชื่อ-สกุล:</td>
-                                        <td class="py-1 w-1/4 text-gray-900">${p.name||'-'}</td>
-                                        <td class="py-1 w-1/4 font-semibold text-gray-600">HN / เลขประจำตัว:</td>
-                                        <td class="py-1 w-1/4 text-gray-900">${p.hn||'-'}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="py-1 font-semibold text-gray-600">อายุ / เพศ:</td>
-                                        <td>${p.age||'-'} ปี / ${p.gender||'-'}</td>
-                                        <td class="py-1 font-semibold text-gray-600">ประเภทผู้ป่วย:</td>
-                                        <td>${p.patientType||'-'}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="py-1 font-semibold text-gray-600">ระดับ ADL Score:</td>
-                                        <td>${p.adlScore||'-'}</td>
-                                        <td class="py-1 font-semibold text-gray-600">สิทธิ์การรักษา:</td>
-                                        <td>${p.insurance||'-'}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="py-1 font-semibold text-gray-600">วันที่เริ่มเข้าดูแล:</td>
-                                        <td colspan="3">${formatDateOnly(p.admissionDate)}</td>
-                                    </tr>
-                                </table>
-                                
-                                <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 rounded text-xs">2. ญาติผู้ดูแลและผู้ติดต่อหลัก</h3>
-                                <table class="w-full mb-4 text-[10px] border-collapse">
-                                    <tr>
-                                        <td class="py-1 w-1/4 font-semibold text-gray-600">ชื่อ-สกุลญาติ:</td>
-                                        <td class="py-1 w-1/4 text-gray-900">${p.relativeName||'-'}</td>
-                                        <td class="py-1 w-1/4 font-semibold text-gray-600">ความสัมพันธ์:</td>
-                                        <td class="py-1 w-1/4 text-gray-900">${p.relativeRelation||'-'}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="py-1 font-semibold text-gray-600">เบอร์โทรศัพท์ติดต่อ:</td>
-                                        <td colspan="3" class="text-amber-800 font-bold">${p.relativePhone||'-'}</td>
-                                    </tr>
-                                </table>
-                                
-                                <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 mt-4 rounded text-xs">3. ประวัติการรักษากับโรงพยาบาลทับคล้อ</h3>
-                                <div class="p-2 border border-gray-100 bg-gray-50/50 rounded mb-2">
-                                    <p class="font-semibold text-[10px] text-gray-700">ประวัติพื้นฐาน / ส่งตัว:</p>
-                                    <p class="text-gray-600 text-[10px] whitespace-pre-wrap">${p.hospitalHistory||'ไม่มีประวัติเริ่มต้น'}</p>
-                                </div>
-                                <div class="space-y-2 mt-2">
-                                    ${(p.hospitalRecords || []).length > 0 ? (p.hospitalRecords || []).map(hr => `
-                                        <div class="border border-gray-200 p-2.5 rounded bg-white">
-                                            <div class="flex justify-between font-bold text-amber-900 text-[9px] border-b pb-1 mb-1">
-                                                <span>📅 วันที่เข้ารักษา: ${formatDateOnly(hr.date)}</span>
-                                                <span class="bg-amber-100 px-1.5 rounded">สถานะจำหน่าย: ${hr.dischargeStatus||'-'}</span>
-                                            </div>
-                                            <p class="text-[9px] text-gray-800"><b>อาการ (Dx):</b> ${hr.diagnosis||'-'}</p>
-                                            <p class="text-[9px] text-gray-800"><b>การรักษา (Tx):</b> ${hr.treatment||'-'}</p>
-                                            ${hr.note ? `<p class="text-[9px] text-gray-500 italic"><b>หมายเหตุ:</b> ${hr.note}</p>` : ''}
-                                        </div>
-                                    `).join('') : '<p class="text-center text-gray-400 py-4 text-[10px]">ไม่มีข้อมูลประวัติผู้ป่วยใน รพ. เพิ่มเติม</p>'}
-                                </div>
+                        <div class="w-full">
+                            <div class="text-center pb-3 border-b-2 border-amber-500 mb-5">
+                                <h1 class="text-xl font-bold text-amber-800">เวชระเบียนผู้ป่วยและรายงานชีวาภิบาล (Medical Summary)</h1>
+                                <p class="text-[10px] text-gray-500 mt-1">สถานชีวาภิบาลพระภิกษุอาพาธ วัดทับคล้อ (สวนพระโพธิสัตว์) | พิมพ์เมื่อ ${new Date().toLocaleDateString('th-TH')}</p>
                             </div>
-                            <div class="text-[9px] text-gray-400 text-center border-t pt-2 mt-4">หน้าที่ 1 / 4 • ข้อมูลทั่วไปและประวัติการรักษาใน รพ.</div>
+                            
+                            ${hasAllergy ? `<div class="bg-red-100 text-red-800 p-2.5 text-center font-bold mb-5 border border-red-300 rounded-lg text-sm">⚠️ ประวัติแพ้ยา: ${p.allergies}</div>` : ''}
+                            
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">1. ข้อมูลทั่วไป (Demographics)</h3>
+                            <table class="w-full mb-5 text-xs border-collapse">
+                                <tr>
+                                    <td class="py-1.5 w-1/4 font-semibold text-gray-600">ชื่อ-สกุล:</td>
+                                    <td class="py-1.5 w-1/4 text-gray-900 font-bold">${p.name||'-'}</td>
+                                    <td class="py-1.5 w-1/4 font-semibold text-gray-600">HN / เลขประจำตัว:</td>
+                                    <td class="py-1.5 w-1/4 text-gray-900 font-bold">${p.hn||'-'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1.5 font-semibold text-gray-600">อายุ / เพศ:</td>
+                                    <td>${p.age||'-'} ปี / ${p.gender||'-'}</td>
+                                    <td class="py-1.5 font-semibold text-gray-600">ประเภทผู้ป่วย:</td>
+                                    <td>${p.patientType||'-'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1.5 font-semibold text-gray-600">ระดับ ADL Score:</td>
+                                    <td>${p.adlScore||'-'}</td>
+                                    <td class="py-1.5 font-semibold text-gray-600">สิทธิ์การรักษา:</td>
+                                    <td>${p.insurance||'-'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1.5 font-semibold text-gray-600">วันที่เริ่มเข้าดูแล:</td>
+                                    <td colspan="3">${formatDateOnly(p.admissionDate)}</td>
+                                </tr>
+                            </table>
+                            
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">2. ญาติผู้ดูแลและผู้ติดต่อหลัก</h3>
+                            <table class="w-full mb-5 text-xs border-collapse">
+                                <tr>
+                                    <td class="py-1.5 w-1/4 font-semibold text-gray-600">ชื่อ-สกุลญาติ:</td>
+                                    <td class="py-1.5 w-1/4 text-gray-900">${p.relativeName||'-'}</td>
+                                    <td class="py-1.5 w-1/4 font-semibold text-gray-600">ความสัมพันธ์:</td>
+                                    <td class="py-1.5 w-1/4 text-gray-900">${p.relativeRelation||'-'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1.5 font-semibold text-gray-600">เบอร์โทรศัพท์ติดต่อ:</td>
+                                    <td colspan="3" class="text-amber-800 font-bold">${p.relativePhone||'-'}</td>
+                                </tr>
+                            </table>
+                            
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">3. ประวัติการรักษากับโรงพยาบาลทับคล้อ</h3>
+                            <div class="p-3 border border-gray-200 bg-gray-50 rounded-lg mb-3">
+                                <p class="font-bold text-gray-800 mb-1">ประวัติพื้นฐาน / ส่งตัว:</p>
+                                <p class="text-gray-700 whitespace-pre-wrap">${p.hospitalHistory||'ไม่มีประวัติเริ่มต้น'}</p>
+                            </div>
+                            <div class="space-y-3 mt-2">
+                                ${(p.hospitalRecords || []).length > 0 ? (p.hospitalRecords || []).map(hr => `
+                                    <div class="border border-gray-200 p-3 rounded-lg bg-white">
+                                        <div class="flex justify-between font-bold text-amber-900 border-b border-amber-100 pb-2 mb-2">
+                                            <span>📅 วันที่เข้ารักษา: ${formatDateOnly(hr.date)}</span>
+                                            <span class="bg-amber-100 px-2 py-0.5 rounded text-[10px]">สถานะจำหน่าย: ${hr.dischargeStatus||'-'}</span>
+                                        </div>
+                                        <p class="text-gray-800 mb-1"><b>อาการ (Dx):</b> ${hr.diagnosis||'-'}</p>
+                                        <p class="text-gray-800 mb-1"><b>การรักษา (Tx):</b> ${hr.treatment||'-'}</p>
+                                        ${hr.note ? `<p class="text-gray-500 italic mt-1 pt-1 border-t border-dashed"><b>หมายเหตุ:</b> ${hr.note}</p>` : ''}
+                                    </div>
+                                `).join('') : '<p class="text-center text-gray-400 py-4 border border-dashed rounded-lg">ไม่มีข้อมูลประวัติผู้ป่วยใน รพ. เพิ่มเติม</p>'}
+                            </div>
                         </div>
 
                         <!-- ================= PAGE 2 ================= -->
                         <div class="html2pdf__page-break"></div>
-                        <div style="padding: 15mm; min-height: 297mm; box-sizing: border-box; display: flex; flex-col justify-between;">
-                            <div>
-                                <div class="text-center pb-2 border-b-2 border-amber-500 mb-4">
-                                    <h2 class="font-bold text-amber-800 text-base">แผนการดูแลล่วงหน้า และ ผลตรวจแลปสะสม</h2>
-                                    <p class="text-[9px] text-gray-500">ชื่อคนไข้: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
-                                </div>
-
-                                <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 rounded text-xs">4. Advance Care Plan (ACP) & POLST (สถานะกู้ชีพ)</h3>
-                                <div class="border border-red-200 p-3 rounded-lg bg-red-50/50 mb-3">
-                                    <span class="font-bold text-red-800 text-[11px] block">สถานะ POLST ล่าสุด:</span> 
-                                    <p class="text-red-700 font-bold text-[10px] mt-0.5">${p.polst || 'ไม่ได้ระบุ DNR/Full Code'}</p>
-                                    <p class="text-[10px] text-gray-600 mt-1"><b>เป้าหมายหลักล่วงหน้า:</b> ${p.acp||'-'}</p>
-                                </div>
-
-                                <div class="space-y-2 mb-4">
-                                    ${(p.acpRecords || []).length > 0 ? (p.acpRecords || []).sort((a,b)=>new Date(b.date)-new Date(a.date)).map((a, i) => {
-                                        let rejects = [];
-                                        acpGoals.forEach((id, idx) => { if(a['no'+id]) rejects.push(acpLabels[idx]); });
-                                        return `
-                                            <div class="border border-gray-200 p-2 rounded bg-white text-[9px]">
-                                                <p class="font-bold text-gray-700">ประเมินเมื่อ: ${formatDateOnly(a.date)} | ผู้บันทึก: ${a.recordedBy||'-'} ${i===0?'<span class="text-amber-600">(เป้าหมายล่าสุด)</span>':''}</p>
-                                                <p class="text-red-600 font-semibold mt-1"><b>ปฏิเสธหัตถการ:</b> ${rejects.length>0 ? rejects.join(', ') : 'ไม่มี (ยินยอมทั้งหมด)'}</p>
-                                                <p class="text-gray-700 mt-1"><b>รายละเอียด/บริบทของครอบครัว:</b> ${a.note||'-'}</p>
-                                            </div>
-                                        `;
-                                    }).join('') : '<p class="text-center text-gray-400 py-3 text-[10px]">ไม่มีข้อมูลประวัติการปรับเป้าหมาย ACP</p>'}
-                                </div>
-
-                                <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 mt-4 rounded text-xs">5. การวินิจฉัยและโรคประจำตัวสะสม</h3>
-                                <div class="grid grid-cols-2 gap-4 mb-4 text-[10px]">
-                                    <div class="p-2 border rounded"><b>การวินิจฉัยหลัก (Diagnosis):</b><p class="text-gray-700 mt-1 whitespace-pre-wrap">${p.diagnosis||'-'}</p></div>
-                                    <div class="p-2 border rounded"><b>โรคประจำตัว (Underlying Diseases):</b><p class="text-gray-700 mt-1 whitespace-pre-wrap">${p.underlyingDiseases||'-'}</p></div>
-                                </div>
-
-                                <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 mt-4 rounded text-xs">6. ผลตรวจทางห้องแลปและแลปประจำปี</h3>
-                                <div class="p-2 border rounded bg-gray-50/50 mb-3 text-[10px]">
-                                    <b>ผลแลปพิเศษและผลสแกนอื่นๆ:</b>
-                                    <p class="text-gray-700 mt-1 whitespace-pre-wrap">${p.otherLabs||'-'}</p>
-                                </div>
-
-                                <table class="w-full text-[9px] text-left border">
-                                    <tr class="bg-gray-100">
-                                        <th class="border p-1.5">ปี พ.ศ.</th>
-                                        <th class="border p-1.5">FBS</th>
-                                        <th class="border p-1.5">HbA1C</th>
-                                        <th class="border p-1.5">eGFR</th>
-                                        <th class="border p-1.5">Chol</th>
-                                        <th class="border p-1.5">HDL</th>
-                                        <th class="border p-1.5">LDL</th>
-                                        <th class="border p-1.5">TG</th>
-                                    </tr>
-                                    ${p.bloodTestsList && p.bloodTestsList.length>0 ? p.bloodTestsList.map(b=>`
-                                        <tr>
-                                            <td class="border p-1.5 font-bold">${b.year}</td>
-                                            <td class="border p-1.5">${b.fbs||'-'}</td>
-                                            <td class="border p-1.5">${b.hba1c||'-'}</td>
-                                            <td class="border p-1.5">${b.egfr||'-'}</td>
-                                            <td class="border p-1.5">${b.chol||'-'}</td>
-                                            <td class="border p-1.5">${b.hdl||'-'}</td>
-                                            <td class="border p-1.5 text-red-600 font-medium">${b.ldl||'-'}</td>
-                                            <td class="border p-1.5">${b.tg||'-'}</td>
-                                        </tr>
-                                    `).join('') : '<tr><td colspan="8" class="text-center border p-2 text-gray-400">ไม่มีตารางประวัติผลเลือดประจำปี</td></tr>'}
-                                </table>
+                        <div class="w-full">
+                            <div class="text-center pb-3 border-b-2 border-amber-500 mb-5">
+                                <h2 class="font-bold text-amber-800 text-xl">แผนการดูแลล่วงหน้า และ ผลตรวจแลปสะสม</h2>
+                                <p class="text-[10px] text-gray-500 mt-1">ชื่อคนไข้: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
                             </div>
-                            <div class="text-[9px] text-gray-400 text-center border-t pt-2 mt-4">หน้าที่ 2 / 4 • แผนล่วงหน้า ACP, POLST และผลตรวจแลปสะสม</div>
+
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">4. Advance Care Plan (ACP) & POLST (สถานะกู้ชีพ)</h3>
+                            <div class="border border-red-200 p-4 rounded-xl bg-red-50 mb-4">
+                                <span class="font-bold text-red-800 block">สถานะ POLST ล่าสุด:</span> 
+                                <p class="text-red-600 font-bold text-sm mt-1">${p.polst || 'ไม่ได้ระบุ DNR/Full Code'}</p>
+                                <p class="text-gray-700 mt-2 pt-2 border-t border-red-100"><b>เป้าหมายหลักล่วงหน้า:</b> ${p.acp||'-'}</p>
+                            </div>
+
+                            <div class="space-y-3 mb-5">
+                                ${(p.acpRecords || []).length > 0 ? (p.acpRecords || []).sort((a,b)=>new Date(b.date)-new Date(a.date)).map((a, i) => {
+                                    let rejects = [];
+                                    acpGoals.forEach((id, idx) => { if(a['no'+id]) rejects.push(acpLabels[idx]); });
+                                    return `
+                                        <div class="border border-gray-200 p-3 rounded-lg bg-white relative">
+                                            ${i===0?'<span class="absolute top-3 right-3 bg-amber-500 text-white px-2 py-0.5 rounded text-[10px] font-bold">เป้าหมายล่าสุด</span>':''}
+                                            <p class="font-bold text-gray-800 mb-2">ประเมินเมื่อ: ${formatDateOnly(a.date)} | ผู้บันทึก: ${a.recordedBy||'-'}</p>
+                                            <p class="text-red-600 font-semibold mb-1"><b>ปฏิเสธหัตถการ:</b> ${rejects.length>0 ? rejects.join(', ') : 'ไม่มี (ยินยอมทั้งหมด)'}</p>
+                                            <p class="text-gray-700 mt-2 bg-gray-50 p-2 rounded"><b>รายละเอียด/บริบทของครอบครัว:</b><br>${a.note||'-'}</p>
+                                        </div>
+                                    `;
+                                }).join('') : '<p class="text-center text-gray-400 py-4 border border-dashed rounded-lg">ไม่มีข้อมูลประวัติการปรับเป้าหมาย ACP</p>'}
+                            </div>
+
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">5. การวินิจฉัยและโรคประจำตัวสะสม</h3>
+                            <div class="grid grid-cols-2 gap-4 mb-5">
+                                <div class="p-3 border border-gray-200 rounded-lg bg-white"><b>การวินิจฉัยหลัก (Diagnosis):</b><p class="text-gray-700 mt-2 whitespace-pre-wrap">${p.diagnosis||'-'}</p></div>
+                                <div class="p-3 border border-gray-200 rounded-lg bg-white"><b>โรคประจำตัว (Underlying Diseases):</b><p class="text-gray-700 mt-2 whitespace-pre-wrap">${p.underlyingDiseases||'-'}</p></div>
+                            </div>
+
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">6. ผลตรวจทางห้องแลปและแลปประจำปี</h3>
+                            <div class="p-3 border border-gray-200 rounded-lg bg-gray-50 mb-4">
+                                <b class="text-gray-800">ผลแลปพิเศษและผลสแกนอื่นๆ:</b>
+                                <p class="text-gray-700 mt-2 whitespace-pre-wrap leading-relaxed">${p.otherLabs||'-'}</p>
+                            </div>
+
+                            <table class="w-full text-xs text-left border-collapse border border-gray-300">
+                                <tr class="bg-gray-100 text-gray-800">
+                                    <th class="border border-gray-300 p-2">ปี พ.ศ.</th>
+                                    <th class="border border-gray-300 p-2">FBS</th>
+                                    <th class="border border-gray-300 p-2">HbA1C</th>
+                                    <th class="border border-gray-300 p-2">eGFR</th>
+                                    <th class="border border-gray-300 p-2">Chol</th>
+                                    <th class="border border-gray-300 p-2">HDL</th>
+                                    <th class="border border-gray-300 p-2">LDL</th>
+                                    <th class="border border-gray-300 p-2">TG</th>
+                                </tr>
+                                ${p.bloodTestsList && p.bloodTestsList.length>0 ? p.bloodTestsList.map(b=>`
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="border border-gray-300 p-2 font-bold text-center">${b.year}</td>
+                                        <td class="border border-gray-300 p-2 text-center">${b.fbs||'-'}</td>
+                                        <td class="border border-gray-300 p-2 text-center">${b.hba1c||'-'}</td>
+                                        <td class="border border-gray-300 p-2 text-center">${b.egfr||'-'}</td>
+                                        <td class="border border-gray-300 p-2 text-center">${b.chol||'-'}</td>
+                                        <td class="border border-gray-300 p-2 text-center">${b.hdl||'-'}</td>
+                                        <td class="border border-gray-300 p-2 text-center text-red-600 font-medium">${b.ldl||'-'}</td>
+                                        <td class="border border-gray-300 p-2 text-center">${b.tg||'-'}</td>
+                                    </tr>
+                                `).join('') : '<tr><td colspan="8" class="text-center border border-gray-300 p-4 text-gray-400">ไม่มีตารางประวัติผลเลือดประจำปี</td></tr>'}
+                            </table>
                         </div>
 
                         <!-- ================= PAGE 3 ================= -->
                         <div class="html2pdf__page-break"></div>
-                        <div style="padding: 15mm; min-height: 297mm; box-sizing: border-box; display: flex; flex-col justify-between;">
-                            <div>
-                                <div class="text-center pb-2 border-b-2 border-amber-500 mb-4">
-                                    <h2 class="font-bold text-amber-800 text-base">รายการยาและการบริหารยาอัจฉริยะ</h2>
-                                    <p class="text-[9px] text-gray-500">ชื่อคนไข้: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
-                                </div>
-
-                                <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 rounded text-xs">7. รายการยาปัจจุบันในสถานชีวาภิบาล (Current Medications)</h3>
-                                <div class="p-3 border border-amber-100 bg-amber-50/30 rounded-lg">
-                                    <ul class="space-y-1.5 text-[10px]">
-                                        ${p.medicationsList && p.medicationsList.length>0 ? p.medicationsList.map(m=>`
-                                            <li class="border-b border-gray-100 pb-1.5 flex justify-between">
-                                                <span>• <b>${m.name}</b> : ${m.dosage} (${m.frequency})</span>
-                                                <span class="text-amber-800 font-bold">จำนวน: ${m.qty || 'ไม่ระบุ'}</span>
-                                            </li>
-                                        `).join('') : '<li class="text-gray-400 italic text-center py-2">ไม่มีข้อมูลยาปัจจุบัน</li>'}
-                                    </ul>
-                                </div>
-
-                                <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 mt-4 rounded text-xs">8. ประวัติใบสั่งยาและการตรวจสอบจากเภสัชกร (Prescription Logs)</h3>
-                                <div class="space-y-3">
-                                    ${rxList.length > 0 ? rxList.map(rx => `
-                                        <div class="border border-gray-300 p-2.5 rounded bg-white text-[9.5px]">
-                                            <div class="bg-gray-100 p-1.5 flex justify-between font-bold text-gray-700 mb-1.5 rounded">
-                                                <span>💊 สั่งยาเมื่อ: ${formatDate(rx.date)}</span>
-                                                <span>สถานะใบสั่ง: ${rx.status === 'received' ? 'เจ้าหน้าที่ได้รับยาแล้ว 🟢' : (rx.status==='dispensed' ? 'เภสัชกรตรวจสอบแล้ว 🔵' : 'รอจ่ายยา 🟡')}</span>
-                                            </div>
-                                            <div class="grid grid-cols-3 gap-2 text-gray-600 mb-1.5">
-                                                <span><b>แพทย์ผู้สั่ง:</b> ${rx.doctor||'-'}</span>
-                                                <span><b>ผู้ตรวจสอบจ่าย (Rx):</b> ${rx.pharmacist||'-'}</span>
-                                                <span><b>เจ้าหน้าที่ผู้ตรวจสอบรับ:</b> ${rx.receiver||'-'}</span>
-                                            </div>
-                                            <ul class="list-disc ml-5 space-y-0.5 text-gray-800">
-                                                ${rx.items.map(i => `<li><b>${i.medName}</b> - ${i.dose} (${i.freq}) | <span class="text-amber-800 font-semibold">จำนวนสั่ง: ${i.qty || 'ไม่ระบุ'}</span></li>`).join('')}
-                                            </ul>
-                                            ${rx.plan ? `<div class="mt-1.5 bg-yellow-50/50 p-1.5 border border-amber-100 rounded"><b>แผนการรักษาของแพทย์:</b> ${rx.plan}</div>` : ''}
-                                            ${rx.appointmentDate ? `<div class="mt-1 text-teal-800"><b>📅 วันนัดหมายรอบถัดไป:</b> ${formatDateOnly(rx.appointmentDate)} ${rx.appointmentNote ? `(${rx.appointmentNote})` : ''}</div>` : ''}
-                                        </div>
-                                    `).join('') : '<p class="text-center text-gray-400 py-4 text-[10px]">ไม่มีประวัติการส่งใบสั่งยาเข้าระบบ</p>'}
-                                </div>
+                        <div class="w-full">
+                            <div class="text-center pb-3 border-b-2 border-amber-500 mb-5">
+                                <h2 class="font-bold text-amber-800 text-xl">รายการยาและการบริหารยาอัจฉริยะ</h2>
+                                <p class="text-[10px] text-gray-500 mt-1">ชื่อคนไข้: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
                             </div>
-                            <div class="text-[9px] text-gray-400 text-center border-t pt-2 mt-4">หน้าที่ 3 / 4 • รายการยาและการประเมินประวัติสั่งยา</div>
+
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">7. รายการยาปัจจุบันในสถานชีวาภิบาล (Current Medications)</h3>
+                            <div class="p-4 border border-amber-200 bg-amber-50/50 rounded-xl mb-5">
+                                <ul class="space-y-2">
+                                    ${p.medicationsList && p.medicationsList.length>0 ? p.medicationsList.map(m=>`
+                                        <li class="border-b border-gray-200 pb-2 flex justify-between items-center">
+                                            <span class="text-gray-800"><span class="text-amber-600 mr-2">•</span> <b class="text-sm">${m.name}</b> : ${m.dosage} (${m.frequency})</span>
+                                            <span class="text-amber-900 font-bold bg-white px-3 py-1 rounded border border-amber-100 shadow-sm">จำนวน: ${m.qty || 'ไม่ระบุ'}</span>
+                                        </li>
+                                    `).join('') : '<li class="text-gray-400 italic text-center py-4">ไม่มีข้อมูลยาปัจจุบัน</li>'}
+                                </ul>
+                            </div>
+
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">8. ประวัติใบสั่งยาและการตรวจสอบจากเภสัชกร (Prescription Logs)</h3>
+                            <div class="space-y-4">
+                                ${rxList.length > 0 ? rxList.map(rx => `
+                                    <div class="border border-gray-300 p-4 rounded-xl bg-white shadow-sm">
+                                        <div class="bg-gray-50 p-2.5 flex justify-between font-bold text-gray-800 mb-3 rounded border border-gray-200">
+                                            <span>💊 สั่งยาเมื่อ: ${formatDate(rx.date)}</span>
+                                            <span class="${rx.status === 'received' ? 'text-green-700' : (rx.status==='dispensed' ? 'text-blue-700' : 'text-amber-600')}">สถานะ: ${rx.status === 'received' ? 'เจ้าหน้าที่ได้รับยาแล้ว 🟢' : (rx.status==='dispensed' ? 'เภสัชกรตรวจสอบแล้ว 🔵' : 'รอจ่ายยา 🟡')}</span>
+                                        </div>
+                                        <div class="grid grid-cols-3 gap-3 text-gray-700 mb-3 bg-gray-50 p-2 rounded">
+                                            <span><b>แพทย์ผู้สั่ง:</b> ${rx.doctor||'-'}</span>
+                                            <span><b>ผู้ตรวจสอบจ่าย:</b> ${rx.pharmacist||'-'}</span>
+                                            <span><b>ผู้ตรวจสอบรับ:</b> ${rx.receiver||'-'}</span>
+                                        </div>
+                                        <ul class="space-y-1 text-gray-800 mb-3">
+                                            ${rx.items.map(i => `<li class="flex items-start"><span class="text-amber-500 mr-2">•</span><span class="flex-1"><b>${i.medName}</b> - ${i.dose} (${i.freq})</span> <span class="text-amber-800 font-semibold text-right">จำนวนสั่ง: ${i.qty || 'ไม่ระบุ'}</span></li>`).join('')}
+                                        </ul>
+                                        ${rx.plan ? `<div class="mt-2 bg-yellow-50 p-2.5 border border-yellow-200 rounded text-gray-800"><b>แผนการรักษาของแพทย์:</b><br>${rx.plan}</div>` : ''}
+                                        ${rx.appointmentDate ? `<div class="mt-3 text-teal-800 font-bold flex items-center"><span class="text-lg mr-1">📅</span> วันนัดหมายรอบถัดไป: ${formatDateOnly(rx.appointmentDate)} ${rx.appointmentNote ? `<span class="font-normal ml-2">(${rx.appointmentNote})</span>` : ''}</div>` : ''}
+                                    </div>
+                                `).join('') : '<p class="text-center text-gray-400 py-6 border border-dashed rounded-xl">ไม่มีประวัติการส่งใบสั่งยาเข้าระบบ</p>'}
+                            </div>
                         </div>
 
                         <!-- ================= PAGE 4 ================= -->
                         <div class="html2pdf__page-break"></div>
-                        <div style="padding: 15mm; min-height: 297mm; box-sizing: border-box; display: flex; flex-col justify-between;">
-                            <div>
-                                <div class="text-center pb-2 border-b-2 border-amber-500 mb-4">
-                                    <h2 class="font-bold text-amber-800 text-base">ตารางบันทึกอาการและสัญญาณชีพรายวัน (MDT Daily Logs)</h2>
-                                    <p class="text-[9px] text-gray-500">ชื่อคนไข้: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
-                                </div>
-
-                                <h3 class="font-bold bg-amber-100 text-amber-900 p-1.5 mb-2 rounded text-xs">9. บันทึกสัญญาณชีพรายวันย้อนหลัง</h3>
-                                <table class="w-full text-[8.5px] text-left border">
-                                    <thead>
-                                        <tr class="bg-gray-100">
-                                            <th class="border p-1 w-20">วัน-เวลา</th>
-                                            <th class="border p-1 w-24">Vital Signs (สัญญาณชีพ)</th>
-                                            <th class="border p-1 text-center w-8">Pain</th>
-                                            <th class="border p-1 text-center w-8">Dyspnea</th>
-                                            <th class="border p-1 text-center w-8">Depress</th>
-                                            <th class="border p-1 text-center w-8">Bowel</th>
-                                            <th class="border p-1">บันทึกสหวิชาชีพ (MDT Notes)</th>
-                                            <th class="border p-1 w-16">ผู้ตรวจ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${state.dailyRecords.filter(r=>r.patientId===p.id).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(r=>`
-                                            <tr>
-                                                <td class="border p-1">${formatDate(r.date).replace(' ', '<br>')}</td>
-                                                <td class="border p-1">BP: ${r.bp||'-'}<br>HR: ${r.hr||'-'} T: ${r.temp||'-'}<br>O2: ${r.o2 ? r.o2+'%':'-'}</td>
-                                                <td class="border p-1 text-center font-bold text-red-600">${r.pain}</td>
-                                                <td class="border p-1 text-center font-bold text-blue-600">${r.dyspnea}</td>
-                                                <td class="border p-1 text-center font-bold text-gray-700">${r.depression}</td>
-                                                <td class="border p-1 text-center font-bold text-amber-700">${r.constipation}</td>
-                                                <td class="border p-1" style="word-break: break-word;">${r.note ? r.note.replace(/\n/g, '<br>') : '-'}</td>
-                                                <td class="border p-1">${r.recorderName||'-'}</td>
-                                            </tr>
-                                        `).join('') || '<tr><td colspan="8" class="text-center border p-4 text-gray-400">ไม่มีข้อมูลบันทึกอาการประจำวัน</td></tr>'}
-                                    </tbody>
-                                </table>
-                                <p class="text-[8px] text-gray-400 mt-2">* หมายเหตุสเกลอาการ: Pain(ปวด), Dyspnea(เหนื่อยหอบ), Depress(ซึมเศร้า), Bowel(ท้องผูก) อิงตาม ESAS Score 0-10</p>
+                        <div class="w-full">
+                            <div class="text-center pb-3 border-b-2 border-amber-500 mb-5">
+                                <h2 class="font-bold text-amber-800 text-xl">ตารางบันทึกอาการและสัญญาณชีพรายวัน (MDT Daily Logs)</h2>
+                                <p class="text-[10px] text-gray-500 mt-1">ชื่อคนไข้: ${p.name||'-'} (HN: ${p.hn||'-'})</p>
                             </div>
-                            <div class="text-[9px] text-gray-400 text-center border-t pt-2 mt-4">หน้าที่ 4 / 4 • สัญญาณชีพและบันทึกความก้าวหน้าอาการ (MDT Progress Note)</div>
-                        </div>
 
+                            <h3 class="font-bold bg-amber-100 text-amber-900 p-2 mb-3 rounded text-sm">9. บันทึกสัญญาณชีพรายวันย้อนหลัง</h3>
+                            <table class="w-full text-[10px] text-left border-collapse border border-gray-300">
+                                <thead>
+                                    <tr class="bg-gray-100 text-gray-800">
+                                        <th class="border border-gray-300 p-2 w-24">วัน-เวลา</th>
+                                        <th class="border border-gray-300 p-2 w-32">Vital Signs</th>
+                                        <th class="border border-gray-300 p-2 text-center">Pain</th>
+                                        <th class="border border-gray-300 p-2 text-center">Dyspnea</th>
+                                        <th class="border border-gray-300 p-2 text-center">Depress</th>
+                                        <th class="border border-gray-300 p-2 text-center">Bowel</th>
+                                        <th class="border border-gray-300 p-2">บันทึกสหวิชาชีพ (MDT Notes)</th>
+                                        <th class="border border-gray-300 p-2 w-20">ผู้ตรวจ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${state.dailyRecords.filter(r=>r.patientId===p.id).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(r=>`
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="border border-gray-300 p-2">${formatDate(r.date).replace(' ', '<br>')}</td>
+                                            <td class="border border-gray-300 p-2 leading-relaxed">BP: ${r.bp||'-'}<br>HR: ${r.hr||'-'} T: ${r.temp||'-'}<br>O2: ${r.o2 ? r.o2+'%':'-'}</td>
+                                            <td class="border border-gray-300 p-2 text-center font-bold text-red-600 text-sm">${r.pain}</td>
+                                            <td class="border border-gray-300 p-2 text-center font-bold text-blue-600 text-sm">${r.dyspnea}</td>
+                                            <td class="border border-gray-300 p-2 text-center font-bold text-gray-700 text-sm">${r.depression}</td>
+                                            <td class="border border-gray-300 p-2 text-center font-bold text-amber-700 text-sm">${r.constipation}</td>
+                                            <td class="border border-gray-300 p-2 whitespace-pre-wrap leading-relaxed text-[11px]">${r.note ? r.note : '-'}</td>
+                                            <td class="border border-gray-300 p-2 text-center">${r.recorderName||'-'}</td>
+                                        </tr>
+                                    `).join('') || '<tr><td colspan="8" class="text-center border border-gray-300 p-6 text-gray-400">ไม่มีข้อมูลบันทึกอาการประจำวัน</td></tr>'}
+                                </tbody>
+                            </table>
+                            <p class="text-[9px] text-gray-500 mt-3">* หมายเหตุสเกลอาการ: Pain(ปวด), Dyspnea(เหนื่อยหอบ), Depress(ซึมเศร้า), Bowel(ท้องผูก) อิงตาม ESAS Score 0-10</p>
+                        </div>
                     </div>
                 </div>
             `;
@@ -2086,16 +2075,31 @@
         // --- PDF EXPORT (COMPREHENSIVE 4-PAGES INDIVIDUAL PATIENT PDF) ---
         window.exportToPDF = function(patientId) {
             const element = document.getElementById('pdf-report-template');
+            
+            // บังคับให้ขนาด Layout ตอนเรนเดอร์เท่ากับขนาดหน้าจอ Desktop เพื่อป้องกันปัญหาขอบขวาแหว่ง (Full Page Width)
             element.classList.remove('hidden');
+            element.style.position = 'absolute';
+            element.style.left = '-9999px';
+            element.style.top = '0';
+            element.style.width = '800px';
+
             const p = state.patients.find(x=>x.id===patientId);
             const opt = {
-                margin:       0,
-                filename:     `Summary_Report_${p.hn||p.name}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                margin:       [12, 12, 12, 12], // เว้นขอบซ้ายขวาบนล่าง 12mm ให้สวยงาม
+                filename:     `Medical_Report_${p.hn||p.name}.pdf`,
+                image:        { type: 'jpeg', quality: 1.0 },
+                html2canvas:  { scale: 2, useCORS: true, windowWidth: 800 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save().then(() => element.classList.add('hidden'));
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                // คืนค่ากลับสู่สถานะซ่อน
+                element.classList.add('hidden');
+                element.style.position = '';
+                element.style.left = '';
+                element.style.top = '';
+                element.style.width = '';
+            });
         };
 
         // --- EXPORT TO EXCEL ---
@@ -2106,10 +2110,29 @@
             if (adl !== 'all') list = list.filter(p => p.adlScore && p.adlScore.includes(adl));
             if(list.length === 0) { alert('ไม่มีข้อมูล'); return; }
             
+            // ดึงข้อมูลผู้ป่วยออกมาอย่างครอบคลุมครบทุกฟิลด์
             const ws = XLSX.utils.json_to_sheet(list.map(p => ({
-                'HN': p.hn, 'ชื่อ': p.name, 'อายุ': p.age, 'แพ้ยา': p.allergies, 'ประเภท': p.patientType
+                'HN': p.hn || '-',
+                'ชื่อ-สกุล': p.name || '-',
+                'อายุ (ปี)': p.age || '-',
+                'เพศ': p.gender || '-',
+                'วันที่รับดูแล': p.admissionDate ? formatDateOnly(p.admissionDate) : '-',
+                'ประเภทผู้ป่วย': p.patientType || '-',
+                'ระดับ ADL': p.adlScore || '-',
+                'สิทธิ์รักษา': p.insurance || '-',
+                'การวินิจฉัย (Dx)': p.diagnosis || '-',
+                'โรคประจำตัว': p.underlyingDiseases || '-',
+                'ประวัติแพ้ยา': p.allergies || '-',
+                'สถานะกู้ชีพ (POLST)': p.polst || '-',
+                'ACP เบื้องต้น': p.acp || '-',
+                'ชื่อญาติผู้ดูแล': p.relativeName || '-',
+                'เกี่ยวข้องเป็น': p.relativeRelation || '-',
+                'เบอร์โทรญาติ': p.relativePhone || '-',
+                'สถานะปัจจุบัน': p.status === 'Discharged' ? 'จำหน่ายแล้ว' : 'กำลังดูแล'
             })));
-            XLSX.writeFile(XLSX.utils.book_append_sheet(XLSX.utils.book_new(), ws, "Patients"), "Patients.xlsx");
+            
+            const fileNameDate = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(XLSX.utils.book_append_sheet(XLSX.utils.book_new(), ws, "Patients"), `Patients_Export_${fileNameDate}.xlsx`);
         };
 
         // --- DISCHARGE MODAL ACTION ---
